@@ -1,0 +1,17 @@
+/* Meridian ERP — global styles layered on top of Tailwind CDN */
+[x-cloak] { display: none !important; }
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+aside ::-webkit-scrollbar-thumb { background: #334155; }
+
+/* Print styles for invoices, payslips, purchase orders */
+@media print {
+    aside, header, footer, .no-print { display: none !important; }
+    main { padding: 0 !important; }
+    .lg\:ml-\[260px\] { margin-left: 0 !important; }
+    .print-block { box-shadow: none !important; border: none !important; }
+}

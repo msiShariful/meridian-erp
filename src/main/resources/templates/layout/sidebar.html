@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+
+<!--
+  Reusable nav-link fragment.
+  href  : target URL
+  label : link text
+  match : URI prefix that marks this link active
+-->
+<th:block th:fragment="item(href, label, match)">
+    <a th:href="@{${href}}"
+       th:classappend="${currentUri != null and #strings.startsWith(currentUri, match)} ? 'bg-brand/15 text-white border-l-2 border-brand' : 'text-slate-400 hover:text-white hover:bg-white/5 border-l-2 border-transparent'"
+       class="flex items-center gap-3 pl-5 pr-3 py-2 rounded-r-lg transition-colors">
+        <span class="w-1.5 h-1.5 rounded-full bg-current opacity-60"></span>
+        <span th:text="${label}">Item</span>
+    </a>
+</th:block>
+
+<th:block th:fragment="group(title)">
+    <p class="px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500" th:text="${title}">Section</p>
+</th:block>
+
+<!-- ===================== FULL NAVIGATION ===================== -->
+<th:block th:fragment="nav">
+
+    <div class="space-y-1">
+        <div th:replace="~{layout/sidebar :: group('Main')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/dashboard', 'Dashboard', '/dashboard')}"></div>
+    </div>
+
+    <div class="space-y-1" sec:authorize="hasAuthority('CRM_VIEW')">
+        <div th:replace="~{layout/sidebar :: group('CRM')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/crm/leads', 'Leads', '/crm/leads')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/crm/contacts', 'Contacts', '/crm/contacts')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/crm/companies', 'Companies', '/crm/companies')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/crm/deals', 'Deals', '/crm/deals')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/crm/activities', 'Activities', '/crm/activities')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/crm/campaigns', 'Campaigns', '/crm/campaigns')}"></div>
+    </div>
+
+    <div class="space-y-1" sec:authorize="hasAuthority('HRM_VIEW')">
+        <div th:replace="~{layout/sidebar :: group('HRM')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/hrm/employees', 'Employees', '/hrm/employees')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/hrm/departments', 'Departments', '/hrm/departments')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/hrm/attendance', 'Attendance', '/hrm/attendance')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/hrm/leave', 'Leave', '/hrm/leave')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/hrm/payroll', 'Payroll', '/hrm/payroll')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/hrm/performance', 'Performance', '/hrm/performance')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/hrm/training', 'Training', '/hrm/training')}"></div>
+    </div>
+
+    <div class="space-y-1" sec:authorize="hasAuthority('INVENTORY_VIEW')">
+        <div th:replace="~{layout/sidebar :: group('Inventory')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/inventory/products', 'Products', '/inventory/products')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/inventory/categories', 'Categories', '/inventory/categories')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/inventory/warehouses', 'Warehouses', '/inventory/warehouses')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/inventory/stock', 'Stock', '/inventory/stock')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/inventory/suppliers', 'Suppliers', '/inventory/suppliers')}"></div>
+    </div>
+
+    <div class="space-y-1" sec:authorize="hasAuthority('ECOMMERCE_VIEW')">
+        <div th:replace="~{layout/sidebar :: group('E-Commerce')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/ecommerce/orders', 'Orders', '/ecommerce/orders')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/ecommerce/customers', 'Customers', '/ecommerce/customers')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/ecommerce/coupons', 'Coupons', '/ecommerce/coupons')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/ecommerce/reviews', 'Reviews', '/ecommerce/reviews')}"></div>
+    </div>
+
+    <div class="space-y-1" sec:authorize="hasAuthority('ACCOUNTING_VIEW')">
+        <div th:replace="~{layout/sidebar :: group('Accounting')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/accounting/invoices', 'Invoices', '/accounting/invoices')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/accounting/payments', 'Payments', '/accounting/payments')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/accounting/expenses', 'Expenses', '/accounting/expenses')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/accounting/journal', 'Journal', '/accounting/journal')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/accounting/accounts', 'Accounts', '/accounting/accounts')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/accounting/budget', 'Budget', '/accounting/budget')}"></div>
+    </div>
+
+    <div class="space-y-1" sec:authorize="hasAuthority('PROCUREMENT_VIEW')">
+        <div th:replace="~{layout/sidebar :: group('Procurement')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/procurement/vendors', 'Vendors', '/procurement/vendors')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/procurement/requisitions', 'Requisitions', '/procurement/requisitions')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/procurement/purchase-orders', 'Purchase Orders', '/procurement/purchase-orders')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/procurement/grn', 'GRN', '/procurement/grn')}"></div>
+    </div>
+
+    <div class="space-y-1" sec:authorize="hasAuthority('PROJECTS_VIEW')">
+        <div th:replace="~{layout/sidebar :: group('Projects')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/projects', 'Projects', '/projects')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/projects/tasks', 'Tasks', '/projects/tasks')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/projects/timesheets', 'Timesheets', '/projects/timesheets')}"></div>
+    </div>
+
+    <div class="space-y-1" sec:authorize="hasAuthority('SUPPORT_VIEW')">
+        <div th:replace="~{layout/sidebar :: group('Support')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/support/tickets', 'Tickets', '/support/tickets')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/support/knowledge-base', 'Knowledge Base', '/support/knowledge-base')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/support/faq', 'FAQ', '/support/faq')}"></div>
+    </div>
+
+    <div class="space-y-1" sec:authorize="hasAuthority('REPORTS_VIEW')">
+        <div th:replace="~{layout/sidebar :: group('Reports')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/reports', 'Dashboard', '/reports')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/reports/custom', 'Custom Reports', '/reports/custom')}"></div>
+    </div>
+
+    <div class="space-y-1" sec:authorize="hasAnyRole('SUPER_ADMIN','ADMIN')">
+        <div th:replace="~{layout/sidebar :: group('Settings')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/settings/company', 'Company', '/settings/company')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/settings/users', 'Users', '/settings/users')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/settings/roles', 'Roles', '/settings/roles')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/settings/email', 'Email', '/settings/email')}"></div>
+        <div th:replace="~{layout/sidebar :: item('/settings/audit', 'Audit Log', '/settings/audit')}"></div>
+    </div>
+
+</th:block>
+</body>
+</html>

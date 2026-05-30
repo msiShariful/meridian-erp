@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="shell" class="min-h-screen bg-slate-100 font-sans flex items-center justify-center p-6"
+     style="font-family: Inter, ui-sans-serif, system-ui;">
+    <div class="text-center max-w-lg">
+        <p class="text-[120px] leading-none font-extrabold text-brand/20" th:text="${statusCode}">500</p>
+        <h1 class="text-2xl font-bold text-slate-800 -mt-6" th:text="${title}">Error</h1>
+        <p class="text-slate-500 mt-2" th:text="${message}">Something went wrong.</p>
+        <div class="mt-8 flex gap-3 justify-center">
+            <a th:href="@{/dashboard}" class="px-5 py-2.5 rounded-lg bg-brand hover:bg-brand-dark text-white font-semibold">Back to Dashboard</a>
+            <a th:href="@{/login}" class="px-5 py-2.5 rounded-lg bg-white border border-slate-300 text-slate-700 font-semibold hover:bg-slate-50">Sign in</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>
