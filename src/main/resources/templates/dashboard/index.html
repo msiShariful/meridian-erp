@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head>
+    <title>Dashboard</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <!-- Page header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Welcome back,
+                <span th:text="${currentUser != null ? #strings.arraySplit(currentUser.fullName,' ')[0] : 'there'}">there</span> 👋</h1>
+            <p class="text-slate-500 text-sm mt-1">Here's what's happening across your business today.</p>
+        </div>
+        <div class="flex gap-2">
+            <a th:href="@{/accounting/invoices/new}" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand hover:bg-brand-dark text-white">+ New Invoice</a>
+            <a th:href="@{/crm/leads/new}" class="px-4 py-2 text-sm font-medium rounded-lg bg-white border border-slate-300 hover:bg-slate-50">+ New Lead</a>
+        </div>
+    </div>
+
+    <!-- KPI cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mb-6">
+        <div th:each="kpi : ${data.kpis}"
+             class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-sm text-slate-500" th:text="${kpi.label}">Label</p>
+                    <p class="text-2xl font-bold text-slate-800 mt-1" th:text="${kpi.value}">0</p>
+                </div>
+                <span th:classappend="${kpi.color == 'success'} ? 'bg-emerald-100 text-emerald-600'
+                       : (${kpi.color == 'warning'} ? 'bg-amber-100 text-amber-600'
+                       : (${kpi.color == 'danger'} ? 'bg-red-100 text-red-600' : 'bg-indigo-100 text-brand'))"
+                      class="w-10 h-10 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13h2l2 6 4-14 3 9 2-4h5"/></svg>
+                </span>
+            </div>
+            <p class="text-xs mt-3 flex items-center gap-1"
+               th:classappend="${kpi.positive} ? 'text-emerald-600' : 'text-red-500'">
+                <span th:text="${kpi.delta}">+0%</span>
+                <span class="text-slate-400">vs last month</span>
+            </p>
+        </div>
+    </div>
+
+    <!-- Charts row -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+        <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+                <h2 class="font-semibold text-slate-800">Revenue Trend</h2>
+                <span class="text-xs text-slate-400">Last 12 months (in thousands ৳)</span>
+            </div>
+            <div id="revenueChart"></div>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+            <h2 class="font-semibold text-slate-800 mb-2">Sales by Category</h2>
+            <div id="categoryChart"></div>
+        </div>
+    </div>
+
+    <!-- Tables row -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+        <!-- Recent orders -->
+        <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                <h2 class="font-semibold text-slate-800">Recent Orders</h2>
+                <a th:href="@{/ecommerce/orders}" class="text-sm text-brand font-medium hover:underline">View all</a>
+            </div>
+            <table class="w-full text-sm">
+                <thead class="bg-slate-50 text-slate-500 text-left">
+                    <tr><th class="px-5 py-2.5 font-medium">Order</th><th class="px-5 py-2.5 font-medium">Customer</th><th class="px-5 py-2.5 font-medium">Amount</th><th class="px-5 py-2.5 font-medium">Status</th></tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    <tr th:each="o : ${data.recentOrders}" class="hover:bg-slate-50">
+                        <td class="px-5 py-3 font-medium text-slate-700" th:text="${o.reference}">ORD</td>
+                        <td class="px-5 py-3 text-slate-600" th:text="${o.customer}">Customer</td>
+                        <td class="px-5 py-3 text-slate-700" th:text="${o.amount}">৳0</td>
+                        <td class="px-5 py-3">
+                            <span th:text="${o.status}"
+                                  th:classappend="${o.status == 'Delivered'} ? 'bg-emerald-100 text-emerald-700'
+                                   : (${o.status == 'Processing'} ? 'bg-indigo-100 text-brand'
+                                   : (${o.status == 'Shipped'} ? 'bg-sky-100 text-sky-700' : 'bg-amber-100 text-amber-700'))"
+                                  class="px-2.5 py-1 rounded-full text-xs font-medium">Status</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Activity feed -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm">
+            <div class="px-5 py-4 border-b border-slate-100"><h2 class="font-semibold text-slate-800">Recent Activity</h2></div>
+            <ul class="p-5 space-y-4">
+                <li th:each="a : ${data.activities}" class="flex gap-3">
+                    <span class="w-2 h-2 mt-1.5 rounded-full bg-brand shrink-0"></span>
+                    <div class="text-sm">
+                        <p class="text-slate-700"><span class="font-medium" th:text="${a.actor}">User</span>
+                            <span th:text="${a.action}">did something</span></p>
+                        <p class="text-xs text-slate-400" th:text="${a.time}">time</p>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Attendance + quick actions -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+            <h2 class="font-semibold text-slate-800 mb-4">Today's Attendance</h2>
+            <div class="grid grid-cols-3 gap-3 text-center">
+                <div class="rounded-lg bg-emerald-50 py-4"><p class="text-2xl font-bold text-emerald-600" th:text="${data.attendance.present}">0</p><p class="text-xs text-slate-500 mt-1">Present</p></div>
+                <div class="rounded-lg bg-red-50 py-4"><p class="text-2xl font-bold text-red-500" th:text="${data.attendance.absent}">0</p><p class="text-xs text-slate-500 mt-1">Absent</p></div>
+                <div class="rounded-lg bg-amber-50 py-4"><p class="text-2xl font-bold text-amber-500" th:text="${data.attendance.leave}">0</p><p class="text-xs text-slate-500 mt-1">On Leave</p></div>
+            </div>
+        </div>
+        <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+            <h2 class="font-semibold text-slate-800 mb-4">Quick Actions</h2>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <a th:href="@{/hrm/employees/new}" class="flex flex-col items-center gap-2 p-4 rounded-lg border border-slate-200 hover:border-brand hover:bg-indigo-50 transition-colors text-sm text-slate-600">
+                    <span class="text-brand text-xl">＋</span> New Employee</a>
+                <a th:href="@{/crm/deals/new}" class="flex flex-col items-center gap-2 p-4 rounded-lg border border-slate-200 hover:border-brand hover:bg-indigo-50 transition-colors text-sm text-slate-600">
+                    <span class="text-brand text-xl">＋</span> New Deal</a>
+                <a th:href="@{/inventory/products/new}" class="flex flex-col items-center gap-2 p-4 rounded-lg border border-slate-200 hover:border-brand hover:bg-indigo-50 transition-colors text-sm text-slate-600">
+                    <span class="text-brand text-xl">＋</span> New Product</a>
+                <a th:href="@{/support/tickets/new}" class="flex flex-col items-center gap-2 p-4 rounded-lg border border-slate-200 hover:border-brand hover:bg-indigo-50 transition-colors text-sm text-slate-600">
+                    <span class="text-brand text-xl">＋</span> New Ticket</a>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const months = /*[[${data.months}]]*/ [];
+        const revenue = /*[[${data.revenue}]]*/ [];
+        const catLabels = /*[[${data.salesByCategory.keySet()}]]*/ [];
+        const catValues = /*[[${data.salesByCategory.values()}]]*/ [];
+
+        document.addEventListener('DOMContentLoaded', function () {
+            new ApexCharts(document.querySelector("#revenueChart"), {
+                chart: { type: 'area', height: 300, toolbar: { show: false }, fontFamily: 'Inter' },
+                series: [{ name: 'Revenue', data: revenue }],
+                xaxis: { categories: months },
+                colors: ['#6366f1'],
+                dataLabels: { enabled: false },
+                stroke: { curve: 'smooth', width: 3 },
+                fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05 } },
+                grid: { borderColor: '#f1f5f9' }
+            }).render();
+
+            new ApexCharts(document.querySelector("#categoryChart"), {
+                chart: { type: 'donut', height: 300, fontFamily: 'Inter' },
+                series: catValues,
+                labels: catLabels,
+                colors: ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#94a3b8'],
+                legend: { position: 'bottom' },
+                plotOptions: { pie: { donut: { size: '65%' } } }
+            }).render();
+        });
+        /*]]>*/
+    </script>
+</div>
+</body>
+</html>
