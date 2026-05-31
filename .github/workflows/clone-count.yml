@@ -1,0 +1,48 @@
+name: clone-count
+
+# Updates the "git clones" badge daily. GitHub only retains 14 days of traffic
+# data, so this records the rolling 14-day clone count published by the API.
+#
+# The default GITHUB_TOKEN can read traffic for its own repository. If your org
+# restricts that, create a Personal Access Token with the `repo` scope and add
+# it as a repository secret named TRAFFIC_TOKEN — this workflow will prefer it.
+
+on:
+  schedule:
+    - cron: '17 3 * * *'   # every day at 03:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  clones:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch clone traffic and refresh badge
+        env:
+          GH_TOKEN: ${{ secrets.TRAFFIC_TOKEN || github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -e
+          data=$(gh api "repos/$REPO/traffic/clones" 2>/dev/null || echo '{}')
+          total=$(echo "$data" | jq -r '.count // 0')
+          uniques=$(echo "$data" | jq -r '.uniques // 0')
+          mkdir -p .github/badges
+          printf '{"schemaVersion":1,"label":"git clones (14d)","message":"%s clones · %s unique","color":"6366f1"}\n' \
+            "$total" "$uniques" > .github/badges/clone-count.json
+          cat .github/badges/clone-count.json
+
+      - name: Commit if changed
+        run: |
+          if ! git diff --quiet -- .github/badges/clone-count.json; then
+            git config user.name  "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add .github/badges/clone-count.json
+            git commit -m "chore: update clone-count badge [skip ci]"
+            git push
+          else
+            echo "No change in clone count."
+          fi

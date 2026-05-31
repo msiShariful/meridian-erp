@@ -6,4 +6,6 @@ uploads/
 .idea/
 *.iml
 .vscode/
-.mvn/
+
+# Keep the Maven wrapper (.mvn/wrapper) committed; ignore only the downloaded jar
+.mvn/wrapper/maven-wrapper.jar
