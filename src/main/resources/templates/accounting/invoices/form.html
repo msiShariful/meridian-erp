@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title th:text="${pageTitle}">Invoice</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('Invoices', '/accounting/invoices', ${pageTitle})}"></div>
+    <h1 class="text-2xl font-bold text-slate-800 mb-6" th:text="${pageTitle}">New Invoice</h1>
+
+    <form th:action="@{/accounting/invoices/save}" th:object="${invoiceForm}" method="post" class="max-w-4xl"
+          x-data="invoiceForm()">
+        <input type="hidden" th:field="*{id}">
+
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 grid grid-cols-1 sm:grid-cols-2 gap-5 mb-6">
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Customer <span class="text-danger">*</span></label>
+                <input th:field="*{customerName}" required class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand focus:ring-1 focus:ring-brand outline-none">
+            </div>
+            <div th:if="${invoiceForm.invoiceNumber != null}">
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Invoice #</label>
+                <input th:value="${invoiceForm.invoiceNumber}" disabled class="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 text-slate-500 font-mono">
+            </div>
+            <div th:unless="${invoiceForm.invoiceNumber != null}"></div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Issue Date</label>
+                <input type="date" th:field="*{issueDate}" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Due Date</label>
+                <input type="date" th:field="*{dueDate}" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand outline-none">
+            </div>
+        </div>
+
+        <!-- Line items -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="font-semibold text-slate-800">Line Items</h2>
+                <button type="button" @click="addRow()" class="text-sm px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium">+ Add row</button>
+            </div>
+            <table class="w-full text-sm">
+                <thead class="text-slate-500 text-left">
+                    <tr>
+                        <th class="py-2 font-medium">Description</th>
+                        <th class="py-2 font-medium w-24">Qty</th>
+                        <th class="py-2 font-medium w-40">Unit Price</th>
+                        <th class="py-2 font-medium w-40 text-right">Line Total</th>
+                        <th class="py-2 w-10"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="item, st : *{items}">
+                        <td class="py-1.5 pr-2">
+                            <input th:field="*{items[__${st.index}__].description}" placeholder="Item description"
+                                   class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand outline-none">
+                        </td>
+                        <td class="py-1.5 pr-2">
+                            <input type="number" min="0" th:field="*{items[__${st.index}__].quantity}"
+                                   x-on:input="recalc()"
+                                   class="qty w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand outline-none">
+                        </td>
+                        <td class="py-1.5 pr-2">
+                            <input type="number" step="0.01" min="0" th:field="*{items[__${st.index}__].unitPrice}"
+                                   x-on:input="recalc()"
+                                   class="price w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand outline-none">
+                        </td>
+                        <td class="py-1.5 text-right text-slate-700 line-total">৳ 0.00</td>
+                        <td class="py-1.5 text-center">
+                            <button type="button" @click="clearRow($el)" class="text-slate-300 hover:text-danger" title="Clear">✕</button>
+                        </td>
+                    </tr>
+                    <!-- extra rows added via Alpine clone target -->
+                    <template x-ref="rowTemplate"></template>
+                </tbody>
+            </table>
+            <div id="extra-rows"></div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Tax Rate (%)</label>
+                    <input type="number" step="0.01" min="0" th:field="*{taxRate}" x-on:input="recalc()"
+                           id="taxRate" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Discount (৳)</label>
+                    <input type="number" step="0.01" min="0" th:field="*{discount}" x-on:input="recalc()"
+                           id="discount" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Notes</label>
+                    <textarea th:field="*{notes}" rows="2" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand outline-none"></textarea>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                <dl class="space-y-3 text-sm">
+                    <div class="flex justify-between"><dt class="text-slate-500">Subtotal</dt><dd class="text-slate-700">৳ <span id="sub-out">0.00</span></dd></div>
+                    <div class="flex justify-between"><dt class="text-slate-500">Tax</dt><dd class="text-slate-700">৳ <span id="tax-out">0.00</span></dd></div>
+                    <div class="flex justify-between"><dt class="text-slate-500">Discount</dt><dd class="text-slate-700">- ৳ <span id="disc-out">0.00</span></dd></div>
+                    <div class="flex justify-between pt-3 border-t border-slate-100 text-base font-bold"><dt class="text-slate-800">Total</dt><dd class="text-slate-900">৳ <span id="total-out">0.00</span></dd></div>
+                </dl>
+            </div>
+        </div>
+
+        <div class="flex gap-2 mt-6">
+            <button type="submit" class="bg-brand hover:bg-brand-dark text-white font-semibold px-5 py-2.5 rounded-lg">Save Invoice</button>
+            <a th:href="@{/accounting/invoices}" class="px-5 py-2.5 rounded-lg bg-white border border-slate-300 text-slate-700 font-medium hover:bg-slate-50">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<th:block layout:fragment="scripts">
+<script>
+function invoiceForm() {
+    return {
+        init() { this.$nextTick(() => this.recalc()); },
+        addRow() {
+            const tbody = this.$el.querySelector('tbody');
+            const rows = tbody.querySelectorAll('tr');
+            const last = rows[rows.length - 1];
+            const idx = rows.length;
+            const clone = last.cloneNode(true);
+            clone.querySelectorAll('input').forEach(inp => {
+                const name = inp.getAttribute('name');
+                if (name) inp.setAttribute('name', name.replace(/items\[\d+\]/, 'items[' + idx + ']'));
+                const id = inp.getAttribute('id');
+                if (id) inp.setAttribute('id', id.replace(/items\d+/, 'items' + idx));
+                if (inp.classList.contains('qty')) inp.value = '0';
+                else if (inp.classList.contains('price')) inp.value = '0';
+                else inp.value = '';
+                inp.addEventListener('input', () => this.recalc());
+            });
+            clone.querySelector('.line-total').textContent = '৳ 0.00';
+            tbody.appendChild(clone);
+            this.bindClear(clone);
+        },
+        clearRow(btn) {
+            const row = btn.closest('tr');
+            row.querySelectorAll('input').forEach(inp => {
+                if (inp.classList.contains('qty') || inp.classList.contains('price')) inp.value = '0';
+                else inp.value = '';
+            });
+            this.recalc();
+        },
+        bindClear(row) {},
+        recalc() {
+            let subtotal = 0;
+            this.$el.querySelectorAll('tbody tr').forEach(row => {
+                const qty = parseFloat(row.querySelector('.qty')?.value || '0') || 0;
+                const price = parseFloat(row.querySelector('.price')?.value || '0') || 0;
+                const lt = qty * price;
+                const cell = row.querySelector('.line-total');
+                if (cell) cell.textContent = '৳ ' + lt.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                subtotal += lt;
+            });
+            const taxRate = parseFloat(document.getElementById('taxRate')?.value || '0') || 0;
+            const discount = parseFloat(document.getElementById('discount')?.value || '0') || 0;
+            const tax = subtotal * taxRate / 100;
+            const total = Math.max(0, subtotal + tax - discount);
+            const fmt = v => v.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('sub-out').textContent = fmt(subtotal);
+            document.getElementById('tax-out').textContent = fmt(tax);
+            document.getElementById('disc-out').textContent = fmt(discount);
+            document.getElementById('total-out').textContent = fmt(total);
+        }
+    };
+}
+</script>
+</th:block>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title th:text="${pageTitle}">Journal Entry</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('Journal', '/accounting/journal', ${pageTitle})}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800" th:text="${entry.reference} ?: 'Journal Entry'">JE-0001</h1>
+            <p class="text-slate-500 text-sm mt-1" th:text="${entry.description}">desc</p>
+        </div>
+        <form sec:authorize="hasAuthority('ACCOUNTING_EDIT')" th:action="@{/accounting/journal/{id}/delete(id=${entry.id})}" method="post" data-confirm="Delete this journal entry?">
+            <button class="px-4 py-2 text-sm font-medium rounded-lg bg-white border border-slate-300 text-danger hover:bg-red-50">Delete</button>
+        </form>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5"><p class="text-sm text-slate-500">Date</p><p class="text-lg font-semibold text-slate-800 mt-1" th:text="${#temporals.format(entry.date, 'dd MMM yyyy')}">date</p></div>
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5"><p class="text-sm text-slate-500">Reference</p><p class="text-lg font-semibold text-slate-800 mt-1 font-mono" th:text="${entry.reference} ?: '—'">JE</p></div>
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5"><p class="text-sm text-slate-500">Total amount</p><p class="text-2xl font-bold text-slate-800 mt-1">৳ <span th:text="${#numbers.formatDecimal(entry.totalAmount, 1, 'COMMA', 2, 'POINT')}">0</span></p></div>
+    </div>
+
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-500 text-left">
+                <tr>
+                    <th class="px-5 py-3 font-medium">Account</th>
+                    <th class="px-5 py-3 font-medium text-right">Debit</th>
+                    <th class="px-5 py-3 font-medium text-right">Credit</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                <tr th:each="line : ${entry.lines}" class="hover:bg-slate-50">
+                    <td class="px-5 py-3 text-slate-700">
+                        <span class="font-mono text-slate-500" th:text="${line.account != null ? line.account.code : ''}">1000</span>
+                        <span th:text="${line.account != null ? line.account.name : '—'}">Cash</span>
+                    </td>
+                    <td class="px-5 py-3 text-right text-slate-700" th:text="${line.debit.signum() > 0 ? '৳ ' + #numbers.formatDecimal(line.debit, 1, 'COMMA', 2, 'POINT') : '—'}">0</td>
+                    <td class="px-5 py-3 text-right text-slate-700" th:text="${line.credit.signum() > 0 ? '৳ ' + #numbers.formatDecimal(line.credit, 1, 'COMMA', 2, 'POINT') : '—'}">0</td>
+                </tr>
+            </tbody>
+            <tfoot class="bg-slate-50 font-semibold">
+                <tr>
+                    <td class="px-5 py-3 text-right text-slate-500">Total</td>
+                    <td class="px-5 py-3 text-right text-slate-800">৳ <span th:text="${#numbers.formatDecimal(entry.totalAmount, 1, 'COMMA', 2, 'POINT')}">0</span></td>
+                    <td class="px-5 py-3 text-right text-slate-800">৳ <span th:text="${#numbers.formatDecimal(entry.totalAmount, 1, 'COMMA', 2, 'POINT')}">0</span></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+</body>
+</html>

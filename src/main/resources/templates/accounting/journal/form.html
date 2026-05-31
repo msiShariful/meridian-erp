@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title th:text="${pageTitle}">Journal Entry</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('Journal', '/accounting/journal', ${pageTitle})}"></div>
+    <h1 class="text-2xl font-bold text-slate-800 mb-6" th:text="${pageTitle}">New Journal Entry</h1>
+
+    <form th:action="@{/accounting/journal/save}" th:object="${journalForm}" method="post" class="max-w-4xl"
+          x-data="journalForm()">
+        <input type="hidden" th:field="*{id}">
+
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 grid grid-cols-1 sm:grid-cols-3 gap-5 mb-6">
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Date</label>
+                <input type="date" th:field="*{date}" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Reference</label>
+                <input th:field="*{reference}" placeholder="JE-0005" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Description</label>
+                <input th:field="*{description}" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand outline-none">
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="font-semibold text-slate-800">Lines</h2>
+                <button type="button" @click="addRow()" class="text-sm px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium">+ Add line</button>
+            </div>
+            <table class="w-full text-sm">
+                <thead class="text-slate-500 text-left">
+                    <tr>
+                        <th class="py-2 font-medium">Account</th>
+                        <th class="py-2 font-medium w-40">Debit</th>
+                        <th class="py-2 font-medium w-40">Credit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="line, st : *{lines}">
+                        <td class="py-1.5 pr-2">
+                            <select th:field="*{lines[__${st.index}__].accountId}"
+                                    class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand outline-none">
+                                <option value="">— Select account —</option>
+                                <option th:each="acc : ${accounts}" th:value="${acc.id}"
+                                        th:text="${acc.code + ' · ' + acc.name}"></option>
+                            </select>
+                        </td>
+                        <td class="py-1.5 pr-2">
+                            <input type="number" step="0.01" min="0" th:field="*{lines[__${st.index}__].debit}"
+                                   x-on:input="recalc()"
+                                   class="debit w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand outline-none">
+                        </td>
+                        <td class="py-1.5">
+                            <input type="number" step="0.01" min="0" th:field="*{lines[__${st.index}__].credit}"
+                                   x-on:input="recalc()"
+                                   class="credit w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand outline-none">
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr class="border-t border-slate-200 font-medium">
+                        <td class="py-3 text-right pr-4 text-slate-500">Totals</td>
+                        <td class="py-3 text-slate-800">৳ <span id="debit-total">0.00</span></td>
+                        <td class="py-3 text-slate-800">৳ <span id="credit-total">0.00</span></td>
+                    </tr>
+                </tfoot>
+            </table>
+            <p id="balance-msg" class="mt-3 text-sm"></p>
+        </div>
+
+        <div class="flex gap-2">
+            <button type="submit" class="bg-brand hover:bg-brand-dark text-white font-semibold px-5 py-2.5 rounded-lg">Post Entry</button>
+            <a th:href="@{/accounting/journal}" class="px-5 py-2.5 rounded-lg bg-white border border-slate-300 text-slate-700 font-medium hover:bg-slate-50">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<th:block layout:fragment="scripts">
+<script>
+function journalForm() {
+    return {
+        init() { this.$nextTick(() => this.recalc()); },
+        addRow() {
+            const tbody = this.$el.querySelector('tbody');
+            const rows = tbody.querySelectorAll('tr');
+            const last = rows[rows.length - 1];
+            const idx = rows.length;
+            const clone = last.cloneNode(true);
+            clone.querySelectorAll('input, select').forEach(el => {
+                const name = el.getAttribute('name');
+                if (name) el.setAttribute('name', name.replace(/lines\[\d+\]/, 'lines[' + idx + ']'));
+                const id = el.getAttribute('id');
+                if (id) el.setAttribute('id', id.replace(/lines\d+/, 'lines' + idx));
+                if (el.tagName === 'SELECT') el.selectedIndex = 0;
+                else if (el.classList.contains('debit') || el.classList.contains('credit')) el.value = '0';
+                el.addEventListener('input', () => this.recalc());
+            });
+            tbody.appendChild(clone);
+        },
+        recalc() {
+            let debit = 0, credit = 0;
+            this.$el.querySelectorAll('tbody tr').forEach(row => {
+                debit += parseFloat(row.querySelector('.debit')?.value || '0') || 0;
+                credit += parseFloat(row.querySelector('.credit')?.value || '0') || 0;
+            });
+            const fmt = v => v.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('debit-total').textContent = fmt(debit);
+            document.getElementById('credit-total').textContent = fmt(credit);
+            const msg = document.getElementById('balance-msg');
+            if (debit === 0 && credit === 0) { msg.textContent = ''; }
+            else if (Math.abs(debit - credit) < 0.005) { msg.textContent = '✓ Balanced'; msg.className = 'mt-3 text-sm text-emerald-600 font-medium'; }
+            else { msg.textContent = '✗ Out of balance by ৳ ' + fmt(Math.abs(debit - credit)); msg.className = 'mt-3 text-sm text-danger font-medium'; }
+        }
+    };
+}
+</script>
+</th:block>
+</body>
+</html>

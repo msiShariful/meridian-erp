@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Chart of Accounts</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('Accounting', '', 'Accounts')}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Chart of Accounts</h1>
+            <p class="text-slate-500 text-sm mt-1">General ledger accounts grouped by type.</p>
+        </div>
+        <a sec:authorize="hasAuthority('ACCOUNTING_EDIT')" th:href="@{/accounting/accounts/new}" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand hover:bg-brand-dark text-white">+ New Account</a>
+    </div>
+
+    <div th:replace="~{layout/components :: listToolbar('/accounting/accounts', ${q})}"></div>
+
+    <div class="space-y-6">
+        <div th:each="group : ${grouped}" th:if="${!group.value.isEmpty()}" class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="px-5 py-3 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
+                <span th:replace="~{layout/components :: badge(${group.key.label}, ${group.key.color})}"></span>
+                <span class="text-xs text-slate-400" th:text="${group.value.size()} + ' account(s)'">0</span>
+            </div>
+            <table class="w-full text-sm">
+                <thead class="bg-white text-slate-500 text-left">
+                    <tr>
+                        <th class="px-5 py-2 font-medium w-32">Code</th>
+                        <th class="px-5 py-2 font-medium">Name</th>
+                        <th class="px-5 py-2 font-medium">Description</th>
+                        <th class="px-5 py-2 font-medium text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    <tr th:each="account : ${group.value}" class="hover:bg-slate-50">
+                        <td class="px-5 py-3 font-mono text-slate-700" th:text="${account.code}">1000</td>
+                        <td class="px-5 py-3 font-medium text-slate-700" th:text="${account.name}">Cash</td>
+                        <td class="px-5 py-3 text-slate-500" th:text="${account.description} ?: '—'">desc</td>
+                        <td class="px-5 py-3 text-right whitespace-nowrap">
+                            <a sec:authorize="hasAuthority('ACCOUNTING_EDIT')" th:href="@{/accounting/accounts/{id}/edit(id=${account.id})}" class="text-slate-400 hover:text-brand px-1.5" title="Edit">✎</a>
+                            <form sec:authorize="hasAuthority('ACCOUNTING_EDIT')" th:action="@{/accounting/accounts/{id}/delete(id=${account.id})}" method="post" class="inline" data-confirm="Delete this account?">
+                                <button class="text-slate-400 hover:text-danger px-1.5" title="Delete">🗑</button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>

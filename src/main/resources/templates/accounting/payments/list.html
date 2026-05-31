@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Payments</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('Accounting', '', 'Payments')}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Payments</h1>
+            <p class="text-slate-500 text-sm mt-1">Recorded incoming payments.</p>
+        </div>
+        <a sec:authorize="hasAuthority('ACCOUNTING_EDIT')" th:href="@{/accounting/payments/new}" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand hover:bg-brand-dark text-white">+ Record Payment</a>
+    </div>
+
+    <div th:replace="~{layout/components :: listToolbar('/accounting/payments', ${q})}"></div>
+
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div th:if="${payments.isEmpty()}" th:replace="~{layout/components :: emptyState('No payments found', 'Record your first payment.', '/accounting/payments/new', '+ Record Payment')}"></div>
+
+        <table th:unless="${payments.isEmpty()}" class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-500 text-left">
+                <tr>
+                    <th class="px-5 py-3 font-medium">Invoice</th>
+                    <th class="px-5 py-3 font-medium text-right">Amount</th>
+                    <th class="px-5 py-3 font-medium">Method</th>
+                    <th class="px-5 py-3 font-medium">Date</th>
+                    <th class="px-5 py-3 font-medium">Reference</th>
+                    <th class="px-5 py-3 font-medium text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                <tr th:each="payment : ${payments.content}" class="hover:bg-slate-50">
+                    <td class="px-5 py-3">
+                        <a th:if="${payment.invoice != null}" th:href="@{/accounting/invoices/{id}(id=${payment.invoice.id})}" class="font-mono text-brand hover:underline" th:text="${payment.invoice.invoiceNumber}">INV-0001</a>
+                        <span th:unless="${payment.invoice != null}" class="text-slate-400">— (unlinked)</span>
+                    </td>
+                    <td class="px-5 py-3 text-right text-slate-700 whitespace-nowrap">৳ <span th:text="${#numbers.formatDecimal(payment.amount, 1, 'COMMA', 2, 'POINT')}">0</span></td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${payment.method.label}">Cash</td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${#temporals.format(payment.date, 'dd MMM yyyy')}">date</td>
+                    <td class="px-5 py-3 text-slate-500" th:text="${payment.reference} ?: '—'">ref</td>
+                    <td class="px-5 py-3 text-right whitespace-nowrap">
+                        <a sec:authorize="hasAuthority('ACCOUNTING_EDIT')" th:href="@{/accounting/payments/{id}/edit(id=${payment.id})}" class="text-slate-400 hover:text-brand px-1.5" title="Edit">✎</a>
+                        <form sec:authorize="hasAuthority('ACCOUNTING_EDIT')" th:action="@{/accounting/payments/{id}/delete(id=${payment.id})}" method="post" class="inline" data-confirm="Delete this payment?">
+                            <button class="text-slate-400 hover:text-danger px-1.5" title="Delete">🗑</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div th:replace="~{layout/components :: pagination(${payments}, '/accounting/payments', ${q})}"></div>
+    </div>
+</div>
+</body>
+</html>

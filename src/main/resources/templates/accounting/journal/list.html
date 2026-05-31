@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Journal Entries</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('Accounting', '', 'Journal')}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Journal Entries</h1>
+            <p class="text-slate-500 text-sm mt-1">Double-entry general ledger postings.</p>
+        </div>
+        <a sec:authorize="hasAuthority('ACCOUNTING_EDIT')" th:href="@{/accounting/journal/new}" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand hover:bg-brand-dark text-white">+ New Entry</a>
+    </div>
+
+    <div th:replace="~{layout/components :: listToolbar('/accounting/journal', ${q})}"></div>
+
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div th:if="${entries.isEmpty()}" th:replace="~{layout/components :: emptyState('No journal entries', 'Post your first balanced journal entry.', '/accounting/journal/new', '+ New Entry')}"></div>
+
+        <table th:unless="${entries.isEmpty()}" class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-500 text-left">
+                <tr>
+                    <th class="px-5 py-3 font-medium">Date</th>
+                    <th class="px-5 py-3 font-medium">Reference</th>
+                    <th class="px-5 py-3 font-medium">Description</th>
+                    <th class="px-5 py-3 font-medium text-right">Amount</th>
+                    <th class="px-5 py-3 font-medium text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                <tr th:each="entry : ${entries.content}" class="hover:bg-slate-50">
+                    <td class="px-5 py-3 text-slate-600" th:text="${#temporals.format(entry.date, 'dd MMM yyyy')}">date</td>
+                    <td class="px-5 py-3">
+                        <a th:href="@{/accounting/journal/{id}(id=${entry.id})}" class="font-mono font-medium text-slate-700 hover:text-brand" th:text="${entry.reference} ?: '—'">JE-0001</a>
+                    </td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${entry.description} ?: '—'">desc</td>
+                    <td class="px-5 py-3 text-right text-slate-700 whitespace-nowrap">৳ <span th:text="${#numbers.formatDecimal(entry.totalAmount, 1, 'COMMA', 2, 'POINT')}">0</span></td>
+                    <td class="px-5 py-3 text-right whitespace-nowrap">
+                        <form sec:authorize="hasAuthority('ACCOUNTING_EDIT')" th:action="@{/accounting/journal/{id}/delete(id=${entry.id})}" method="post" class="inline" data-confirm="Delete this journal entry?">
+                            <button class="text-slate-400 hover:text-danger px-1.5" title="Delete">🗑</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div th:replace="~{layout/components :: pagination(${entries}, '/accounting/journal', ${q})}"></div>
+    </div>
+</div>
+</body>
+</html>

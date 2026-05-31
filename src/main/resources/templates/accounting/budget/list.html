@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Budgets</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('Accounting', '', 'Budget')}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Budgets</h1>
+            <p class="text-slate-500 text-sm mt-1">Planned vs. actual spend by category.</p>
+        </div>
+        <a sec:authorize="hasAuthority('ACCOUNTING_EDIT')" th:href="@{/accounting/budget/new}" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand hover:bg-brand-dark text-white">+ New Budget</a>
+    </div>
+
+    <div th:replace="~{layout/components :: listToolbar('/accounting/budget', ${q})}"></div>
+
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div th:if="${budgets.isEmpty()}" th:replace="~{layout/components :: emptyState('No budgets found', 'Create your first budget line.', '/accounting/budget/new', '+ New Budget')}"></div>
+
+        <table th:unless="${budgets.isEmpty()}" class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-500 text-left">
+                <tr>
+                    <th class="px-5 py-3 font-medium">Category</th>
+                    <th class="px-5 py-3 font-medium">Period</th>
+                    <th class="px-5 py-3 font-medium text-right">Budgeted</th>
+                    <th class="px-5 py-3 font-medium text-right">Actual</th>
+                    <th class="px-5 py-3 font-medium text-right">Variance</th>
+                    <th class="px-5 py-3 font-medium">Used</th>
+                    <th class="px-5 py-3 font-medium text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                <tr th:each="budget : ${budgets.content}" class="hover:bg-slate-50">
+                    <td class="px-5 py-3 font-medium text-slate-700" th:text="${budget.categoryName}">Cat</td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${budget.period}">Period</td>
+                    <td class="px-5 py-3 text-right text-slate-700 whitespace-nowrap">৳ <span th:text="${#numbers.formatDecimal(budget.budgetedAmount, 1, 'COMMA', 2, 'POINT')}">0</span></td>
+                    <td class="px-5 py-3 text-right text-slate-700 whitespace-nowrap">৳ <span th:text="${#numbers.formatDecimal(budget.actualAmount, 1, 'COMMA', 2, 'POINT')}">0</span></td>
+                    <td class="px-5 py-3 text-right whitespace-nowrap"
+                        th:classappend="${budget.variance().signum() >= 0} ? 'text-emerald-600' : 'text-danger'">
+                        ৳ <span th:text="${#numbers.formatDecimal(budget.variance(), 1, 'COMMA', 2, 'POINT')}">0</span>
+                    </td>
+                    <td class="px-5 py-3">
+                        <span class="font-medium"
+                              th:classappend="${budget.variancePercent().compareTo(T(java.math.BigDecimal).valueOf(100L)) > 0} ? 'text-danger' : (${budget.variancePercent().compareTo(T(java.math.BigDecimal).valueOf(90L)) >= 0} ? 'text-amber-600' : 'text-emerald-600')"
+                              th:text="${#numbers.formatDecimal(budget.variancePercent(), 1, 'POINT', 1, 'POINT')} + '%'">0%</span>
+                    </td>
+                    <td class="px-5 py-3 text-right whitespace-nowrap">
+                        <a sec:authorize="hasAuthority('ACCOUNTING_EDIT')" th:href="@{/accounting/budget/{id}/edit(id=${budget.id})}" class="text-slate-400 hover:text-brand px-1.5" title="Edit">✎</a>
+                        <form sec:authorize="hasAuthority('ACCOUNTING_EDIT')" th:action="@{/accounting/budget/{id}/delete(id=${budget.id})}" method="post" class="inline" data-confirm="Delete this budget?">
+                            <button class="text-slate-400 hover:text-danger px-1.5" title="Delete">🗑</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div th:replace="~{layout/components :: pagination(${budgets}, '/accounting/budget', ${q})}"></div>
+    </div>
+</div>
+</body>
+</html>

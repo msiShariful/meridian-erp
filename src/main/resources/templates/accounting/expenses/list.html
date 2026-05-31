@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Expenses</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('Accounting', '', 'Expenses')}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Expenses</h1>
+            <p class="text-slate-500 text-sm mt-1">Track and approve expense claims.</p>
+        </div>
+        <a sec:authorize="hasAuthority('ACCOUNTING_EDIT')" th:href="@{/accounting/expenses/new}" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand hover:bg-brand-dark text-white">+ New Claim</a>
+    </div>
+
+    <div th:replace="~{layout/components :: listToolbar('/accounting/expenses', ${q})}"></div>
+
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div th:if="${expenses.isEmpty()}" th:replace="~{layout/components :: emptyState('No expenses found', 'Submit your first expense claim.', '/accounting/expenses/new', '+ New Claim')}"></div>
+
+        <table th:unless="${expenses.isEmpty()}" class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-500 text-left">
+                <tr>
+                    <th class="px-5 py-3 font-medium">Category</th>
+                    <th class="px-5 py-3 font-medium">Description</th>
+                    <th class="px-5 py-3 font-medium text-right">Amount</th>
+                    <th class="px-5 py-3 font-medium">Date</th>
+                    <th class="px-5 py-3 font-medium">Claimed By</th>
+                    <th class="px-5 py-3 font-medium">Status</th>
+                    <th class="px-5 py-3 font-medium text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                <tr th:each="expense : ${expenses.content}" class="hover:bg-slate-50">
+                    <td class="px-5 py-3 text-slate-600" th:text="${expense.category != null ? expense.category.name : '—'}">Cat</td>
+                    <td class="px-5 py-3 font-medium text-slate-700" th:text="${expense.description}">Desc</td>
+                    <td class="px-5 py-3 text-right text-slate-700 whitespace-nowrap">৳ <span th:text="${#numbers.formatDecimal(expense.amount, 1, 'COMMA', 2, 'POINT')}">0</span></td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${#temporals.format(expense.date, 'dd MMM yyyy')}">date</td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${expense.claimedBy} ?: '—'">By</td>
+                    <td class="px-5 py-3">
+                        <span th:replace="~{layout/components :: badge(${expense.status.label}, ${expense.status.color})}"></span>
+                    </td>
+                    <td class="px-5 py-3 text-right whitespace-nowrap" sec:authorize="hasAuthority('ACCOUNTING_EDIT')">
+                        <form th:if="${expense.status.name() == 'PENDING'}" th:action="@{/accounting/expenses/{id}/approve(id=${expense.id})}" method="post" class="inline">
+                            <button class="text-emerald-500 hover:text-emerald-700 px-1.5" title="Approve">✓</button>
+                        </form>
+                        <form th:if="${expense.status.name() == 'PENDING'}" th:action="@{/accounting/expenses/{id}/reject(id=${expense.id})}" method="post" class="inline">
+                            <button class="text-amber-500 hover:text-amber-700 px-1.5" title="Reject">⊘</button>
+                        </form>
+                        <a th:href="@{/accounting/expenses/{id}/edit(id=${expense.id})}" class="text-slate-400 hover:text-brand px-1.5" title="Edit">✎</a>
+                        <form th:action="@{/accounting/expenses/{id}/delete(id=${expense.id})}" method="post" class="inline" data-confirm="Delete this expense?">
+                            <button class="text-slate-400 hover:text-danger px-1.5" title="Delete">🗑</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div th:replace="~{layout/components :: pagination(${expenses}, '/accounting/expenses', ${q})}"></div>
+    </div>
+</div>
+</body>
+</html>
