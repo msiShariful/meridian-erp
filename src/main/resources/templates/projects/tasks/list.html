@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Tasks</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('Projects', '/projects', 'Tasks')}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Tasks</h1>
+            <p class="text-slate-500 text-sm mt-1">All tasks across your projects.</p>
+        </div>
+        <div class="flex gap-2">
+            <a th:href="@{/projects/tasks}" class="px-4 py-2 text-sm font-medium rounded-lg bg-white border border-slate-300 hover:bg-slate-50">Board view</a>
+            <a sec:authorize="hasAuthority('PROJECTS_EDIT')" th:href="@{/projects/tasks/new}" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand hover:bg-brand-dark text-white">+ New Task</a>
+        </div>
+    </div>
+
+    <form th:action="@{/projects/tasks/list}" method="get" class="flex flex-col sm:flex-row gap-3 mb-4">
+        <select name="status" onchange="this.form.submit()"
+                class="px-3 py-2 text-sm rounded-lg border border-slate-300 focus:border-brand outline-none">
+            <option value="">All statuses</option>
+            <option th:each="s : ${statuses}" th:value="${s}" th:text="${s.label}" th:selected="${s == statusFilter}"></option>
+        </select>
+        <select name="priority" onchange="this.form.submit()"
+                class="px-3 py-2 text-sm rounded-lg border border-slate-300 focus:border-brand outline-none">
+            <option value="">All priorities</option>
+            <option th:each="p : ${priorities}" th:value="${p}" th:text="${p.label}" th:selected="${p == priorityFilter}"></option>
+        </select>
+        <button class="px-4 py-2 text-sm rounded-lg bg-slate-800 text-white">Filter</button>
+    </form>
+
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div th:if="${tasks.isEmpty()}" th:replace="~{layout/components :: emptyState('No tasks found', 'Create a task or adjust your filters.', '/projects/tasks/new', '+ New Task')}"></div>
+
+        <table th:unless="${tasks.isEmpty()}" class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-500 text-left">
+                <tr>
+                    <th class="px-5 py-3 font-medium">Task</th>
+                    <th class="px-5 py-3 font-medium">Project</th>
+                    <th class="px-5 py-3 font-medium">Assignee</th>
+                    <th class="px-5 py-3 font-medium">Priority</th>
+                    <th class="px-5 py-3 font-medium">Status</th>
+                    <th class="px-5 py-3 font-medium">Due</th>
+                    <th class="px-5 py-3 font-medium text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                <tr th:each="t : ${tasks}" class="hover:bg-slate-50">
+                    <td class="px-5 py-3">
+                        <a th:href="@{/projects/tasks/{id}(id=${t.id})}" class="font-medium text-slate-700 hover:text-brand" th:text="${t.title}">Title</a>
+                    </td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${t.project != null ? t.project.name : '—'}">Project</td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${t.assignee} ?: '—'">Assignee</td>
+                    <td class="px-5 py-3"><span th:replace="~{layout/components :: badge(${t.priority.label}, ${t.priority.color})}"></span></td>
+                    <td class="px-5 py-3"><span th:replace="~{layout/components :: badge(${t.status.label}, ${t.status.color})}"></span></td>
+                    <td class="px-5 py-3 text-slate-500" th:text="${t.dueDate != null ? #temporals.format(t.dueDate, 'dd MMM yyyy') : '—'}">Due</td>
+                    <td class="px-5 py-3 text-right whitespace-nowrap">
+                        <a sec:authorize="hasAuthority('PROJECTS_EDIT')" th:href="@{/projects/tasks/{id}/edit(id=${t.id})}" class="text-slate-400 hover:text-brand px-1.5" title="Edit">✎</a>
+                        <form sec:authorize="hasAuthority('PROJECTS_EDIT')" th:action="@{/projects/tasks/{id}/delete(id=${t.id})}" method="post" class="inline" data-confirm="Delete this task?">
+                            <button class="text-slate-400 hover:text-danger px-1.5" title="Delete">🗑</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

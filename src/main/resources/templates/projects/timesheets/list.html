@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Timesheets</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('Projects', '/projects', 'Timesheets')}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Timesheets</h1>
+            <p class="text-slate-500 text-sm mt-1">Logged effort across all projects.</p>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm px-5 py-3 text-center">
+            <p class="text-xs text-slate-400">Total logged</p>
+            <p class="text-xl font-bold text-slate-800"><span th:text="${totalHours}">0</span> h</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Add time log -->
+        <div sec:authorize="hasAuthority('PROJECTS_EDIT')" class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 h-fit">
+            <h2 class="font-semibold text-slate-800 mb-4">Log Time</h2>
+            <form th:action="@{/projects/timesheets/save}" method="post" class="space-y-3">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Project <span class="text-danger">*</span></label>
+                    <select name="projectId" required class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:border-brand outline-none">
+                        <option value="">— Select project —</option>
+                        <option th:each="p : ${projects}" th:value="${p.id}" th:text="${p.name}"></option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Member</label>
+                    <input name="member" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:border-brand outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">Hours <span class="text-danger">*</span></label>
+                        <input type="number" step="0.25" min="0" name="hours" required class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:border-brand outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">Date</label>
+                        <input type="date" name="date" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:border-brand outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Note</label>
+                    <input name="note" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:border-brand outline-none">
+                </div>
+                <button class="w-full px-4 py-2 text-sm rounded-lg bg-brand hover:bg-brand-dark text-white font-medium">Add entry</button>
+            </form>
+        </div>
+
+        <!-- Log table -->
+        <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div th:if="${timeLogs.isEmpty()}" class="text-center py-16 px-6 text-sm text-slate-400">No time logged yet.</div>
+            <table th:unless="${timeLogs.isEmpty()}" class="w-full text-sm">
+                <thead class="bg-slate-50 text-slate-500 text-left">
+                    <tr>
+                        <th class="px-5 py-3 font-medium">Member</th>
+                        <th class="px-5 py-3 font-medium">Project</th>
+                        <th class="px-5 py-3 font-medium">Task</th>
+                        <th class="px-5 py-3 font-medium">Date</th>
+                        <th class="px-5 py-3 font-medium text-right">Hours</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    <tr th:each="l : ${timeLogs}" class="hover:bg-slate-50">
+                        <td class="px-5 py-3 text-slate-700" th:text="${l.member} ?: '—'">Member</td>
+                        <td class="px-5 py-3 text-slate-600" th:text="${l.project != null ? l.project.name : '—'}">Project</td>
+                        <td class="px-5 py-3 text-slate-500" th:text="${l.task != null ? l.task.title : '—'}">Task</td>
+                        <td class="px-5 py-3 text-slate-500" th:text="${l.date != null ? #temporals.format(l.date, 'dd MMM yyyy') : '—'}">Date</td>
+                        <td class="px-5 py-3 text-right font-medium text-slate-700" th:text="${l.hours}">0</td>
+                    </tr>
+                </tbody>
+                <tfoot class="bg-slate-50">
+                    <tr>
+                        <td colspan="4" class="px-5 py-3 text-right font-medium text-slate-500">Total</td>
+                        <td class="px-5 py-3 text-right font-bold text-slate-800"><span th:text="${totalHours}">0</span> h</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>

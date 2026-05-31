@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title th:text="${task.title}">Task</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('Tasks', '/projects/tasks/list', ${task.title})}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800" th:text="${task.title}">Title</h1>
+            <p class="text-slate-500 text-sm mt-1">
+                <a th:if="${task.project != null}" th:href="@{/projects/{id}(id=${task.project.id})}" class="hover:text-brand" th:text="${task.project.name}">Project</a>
+            </p>
+        </div>
+        <div class="flex items-center gap-2">
+            <span th:replace="~{layout/components :: badge(${task.priority.label}, ${task.priority.color})}"></span>
+            <span th:replace="~{layout/components :: badge(${task.status.label}, ${task.status.color})}"></span>
+            <a sec:authorize="hasAuthority('PROJECTS_EDIT')" th:href="@{/projects/tasks/{id}/edit(id=${task.id})}" class="px-4 py-2 text-sm font-medium rounded-lg bg-white border border-slate-300 hover:bg-slate-50">Edit</a>
+            <form sec:authorize="hasAuthority('PROJECTS_EDIT')" th:action="@{/projects/tasks/{id}/delete(id=${task.id})}" method="post" data-confirm="Delete this task?">
+                <button class="px-4 py-2 text-sm font-medium rounded-lg bg-white border border-slate-300 text-danger hover:bg-red-50">Delete</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-6">
+
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                <h2 class="font-semibold text-slate-800 mb-3">Description</h2>
+                <p class="text-sm text-slate-600 whitespace-pre-line" th:text="${task.description} ?: 'No description provided.'">Description</p>
+            </div>
+
+            <!-- Comments -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                <h2 class="font-semibold text-slate-800 mb-4">Comments</h2>
+                <ul class="space-y-4 mb-4">
+                    <li th:each="c : ${task.comments}" class="flex gap-3">
+                        <span class="w-9 h-9 rounded-full bg-brand/15 text-brand flex items-center justify-center text-xs font-semibold shrink-0"
+                              th:text="${c.author != null and !c.author.isBlank() ? c.author.substring(0,1).toUpperCase() : '?'}">A</span>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-medium text-slate-700" th:text="${c.author} ?: 'Anonymous'">Author</span>
+                                <span class="text-xs text-slate-400" th:text="${c.postedAt != null ? #temporals.format(c.postedAt, 'dd MMM yyyy, HH:mm') : ''}">date</span>
+                            </div>
+                            <p class="text-sm text-slate-600 mt-1 whitespace-pre-line" th:text="${c.body}">Body</p>
+                        </div>
+                    </li>
+                    <li th:if="${task.comments.isEmpty()}" class="text-sm text-slate-400">No comments yet.</li>
+                </ul>
+                <form sec:authorize="hasAuthority('PROJECTS_EDIT')" th:action="@{/projects/tasks/{id}/comment(id=${task.id})}" method="post" class="space-y-2">
+                    <input name="author" placeholder="Your name" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:border-brand outline-none">
+                    <textarea name="body" required rows="2" placeholder="Add a comment…" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:border-brand outline-none"></textarea>
+                    <button class="px-4 py-2 text-sm rounded-lg bg-brand hover:bg-brand-dark text-white">Comment</button>
+                </form>
+            </div>
+
+            <!-- Time logs -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="font-semibold text-slate-800">Time Logs</h2>
+                    <span class="text-sm text-slate-500">Total: <span class="font-semibold text-slate-700" th:text="${totalHours}">0</span> h</span>
+                </div>
+                <table class="w-full text-sm">
+                    <thead class="text-slate-400 text-left text-xs">
+                        <tr><th class="py-2 font-medium">Member</th><th class="py-2 font-medium">Note</th><th class="py-2 font-medium">Date</th><th class="py-2 font-medium text-right">Hours</th></tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-50">
+                        <tr th:each="l : ${timeLogs}">
+                            <td class="py-2 text-slate-700" th:text="${l.member} ?: '—'">Member</td>
+                            <td class="py-2 text-slate-500" th:text="${l.note} ?: '—'">Note</td>
+                            <td class="py-2 text-slate-500" th:text="${l.date != null ? #temporals.format(l.date, 'dd MMM yyyy') : '—'}">Date</td>
+                            <td class="py-2 text-right font-medium text-slate-700" th:text="${l.hours}">0</td>
+                        </tr>
+                        <tr th:if="${timeLogs.isEmpty()}"><td colspan="4" class="py-3 text-slate-400">No time logged yet.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-6">
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                <h2 class="font-semibold text-slate-800 mb-4">Details</h2>
+                <dl class="space-y-3 text-sm">
+                    <div><dt class="text-slate-400">Assignee</dt><dd class="text-slate-700" th:text="${task.assignee} ?: '—'"></dd></div>
+                    <div><dt class="text-slate-400">Due date</dt><dd class="text-slate-700" th:text="${task.dueDate != null ? #temporals.format(task.dueDate, 'dd MMM yyyy') : '—'}"></dd></div>
+                    <div>
+                        <dt class="text-slate-400 mb-1">Labels</dt>
+                        <dd class="flex flex-wrap gap-1.5">
+                            <th:block th:if="${task.labels != null and !task.labels.isBlank()}">
+                                <span th:each="lbl : ${#strings.arraySplit(task.labels, ',')}"
+                                      th:if="${!lbl.trim().isEmpty()}"
+                                      class="inline-block px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-xs" th:text="${lbl.trim()}">label</span>
+                            </th:block>
+                            <span th:unless="${task.labels != null and !task.labels.isBlank()}" class="text-slate-400">—</span>
+                        </dd>
+                    </div>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

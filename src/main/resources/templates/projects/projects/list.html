@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Projects</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('Projects', '', 'Projects')}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Projects</h1>
+            <p class="text-slate-500 text-sm mt-1">Plan, track and deliver client engagements.</p>
+        </div>
+        <div class="flex gap-2">
+            <a th:href="@{/projects/tasks}" class="px-4 py-2 text-sm font-medium rounded-lg bg-white border border-slate-300 hover:bg-slate-50">Task board</a>
+            <a sec:authorize="hasAuthority('PROJECTS_EDIT')" th:href="@{/projects/new}" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand hover:bg-brand-dark text-white">+ New Project</a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <form th:action="@{/projects}" method="get" class="flex flex-col sm:flex-row gap-3 mb-4">
+        <div class="relative flex-1 max-w-sm">
+            <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"/></svg>
+            <input type="search" name="q" th:value="${q}" placeholder="Search projects…"
+                   class="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-300 focus:border-brand focus:ring-1 focus:ring-brand outline-none">
+        </div>
+        <select name="status" onchange="this.form.submit()"
+                class="px-3 py-2 text-sm rounded-lg border border-slate-300 focus:border-brand outline-none">
+            <option value="">All statuses</option>
+            <option th:each="s : ${statuses}" th:value="${s}" th:text="${s.label}" th:selected="${s == statusFilter}"></option>
+        </select>
+        <button class="px-4 py-2 text-sm rounded-lg bg-slate-800 text-white">Filter</button>
+    </form>
+
+    <div th:if="${projects.isEmpty()}" class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div th:replace="~{layout/components :: emptyState('No projects found', 'Create your first project to start tracking delivery.', '/projects/new', '+ New Project')}"></div>
+    </div>
+
+    <div th:unless="${projects.isEmpty()}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <a th:each="p : ${projects.content}" th:href="@{/projects/{id}(id=${p.id})}"
+           class="block bg-white rounded-xl border border-slate-200 shadow-sm p-5 hover:shadow-md hover:border-brand/40 transition">
+            <div class="flex items-start justify-between gap-3 mb-3">
+                <div class="flex items-center gap-3 min-w-0">
+                    <span class="w-10 h-10 rounded-lg bg-brand/15 text-brand flex items-center justify-center text-sm font-bold shrink-0" th:text="${p.initials}">PR</span>
+                    <div class="min-w-0">
+                        <h3 class="font-semibold text-slate-800 truncate" th:text="${p.name}">Project name</h3>
+                        <p class="text-xs text-slate-400 truncate" th:text="${p.client} ?: 'No client'">Client</p>
+                    </div>
+                </div>
+                <span th:replace="~{layout/components :: badge(${p.status.label}, ${p.status.color})}"></span>
+            </div>
+
+            <div class="mb-3">
+                <div class="flex items-center justify-between text-xs text-slate-500 mb-1">
+                    <span>Progress</span>
+                    <span class="font-medium text-slate-700" th:text="${p.progress} + '%'">0%</span>
+                </div>
+                <div class="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
+                    <div class="h-full bg-brand rounded-full" th:style="'width:' + ${p.progress} + '%'"></div>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between text-xs text-slate-500">
+                <span>৳ <span class="font-medium text-slate-700" th:text="${#numbers.formatInteger(p.budget, 1, 'COMMA')}">0</span></span>
+                <span th:if="${p.endDate}">Due <span th:text="${#temporals.format(p.endDate, 'dd MMM yyyy')}">date</span></span>
+                <span th:unless="${p.endDate}">No deadline</span>
+            </div>
+        </a>
+    </div>
+
+    <div class="mt-4" th:replace="~{layout/components :: pagination(${projects}, '/projects', ${q})}"></div>
+</div>
+</body>
+</html>
