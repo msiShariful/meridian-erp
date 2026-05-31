@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head>
+    <title>Custom Report</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('Reports', '/reports', 'Custom Report')}"></div>
+
+    <!-- Page header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Custom Report Builder</h1>
+            <p class="text-slate-500 text-sm mt-1">Filter any module by date range and export the result.</p>
+        </div>
+        <div class="flex gap-2">
+            <a th:href="@{/reports/export/excel(type='invoices')}" class="px-4 py-2 text-sm font-medium rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white">Export to Excel</a>
+            <a th:href="@{/reports/export/pdf(type='invoices')}" class="px-4 py-2 text-sm font-medium rounded-lg bg-red-600 hover:bg-red-700 text-white">Export to PDF</a>
+        </div>
+    </div>
+
+    <!-- Builder form -->
+    <form th:action="@{/reports/custom}" method="get"
+          class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+        <div>
+            <label class="block text-xs font-medium text-slate-500 mb-1">Module</label>
+            <select name="module"
+                    class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:border-brand focus:ring-1 focus:ring-brand outline-none">
+                <option th:each="m : ${modules}" th:value="${m}" th:text="${#strings.capitalize(m)}"
+                        th:selected="${m == report.module}"></option>
+            </select>
+        </div>
+        <div>
+            <label class="block text-xs font-medium text-slate-500 mb-1">From date</label>
+            <input type="date" name="from" th:value="${report.from}"
+                   class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:border-brand focus:ring-1 focus:ring-brand outline-none">
+        </div>
+        <div>
+            <label class="block text-xs font-medium text-slate-500 mb-1">To date</label>
+            <input type="date" name="to" th:value="${report.to}"
+                   class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:border-brand focus:ring-1 focus:ring-brand outline-none">
+        </div>
+        <div>
+            <label class="block text-xs font-medium text-slate-500 mb-1">Group by (optional)</label>
+            <input type="text" name="groupBy" th:value="${report.groupBy}" placeholder="e.g. status"
+                   class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:border-brand focus:ring-1 focus:ring-brand outline-none">
+        </div>
+        <div>
+            <button class="w-full px-4 py-2 text-sm font-medium rounded-lg bg-brand hover:bg-brand-dark text-white">Run Report</button>
+        </div>
+    </form>
+
+    <!-- Summary -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+            <p class="text-sm text-slate-500">Records</p>
+            <p class="text-2xl font-bold text-slate-800 mt-1" th:text="${report.count}">0</p>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm" th:if="${report.sumLabel != ''}">
+            <p class="text-sm text-slate-500" th:text="${report.sumLabel}">Total</p>
+            <p class="text-2xl font-bold text-slate-800 mt-1" th:text="${report.sumValue}">৳ 0</p>
+        </div>
+    </div>
+
+    <!-- Result table -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-500 text-left">
+                <tr>
+                    <th th:each="h : ${report.headers}" class="px-5 py-3 font-medium whitespace-nowrap" th:text="${h}">Column</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                <tr th:each="row : ${report.rows}" class="hover:bg-slate-50">
+                    <td th:each="cellVal : ${row}" class="px-5 py-3 text-slate-700 whitespace-nowrap" th:text="${cellVal}">value</td>
+                </tr>
+                <tr th:if="${report.rows.isEmpty()}">
+                    <td th:attr="colspan=${report.headers.size()}" class="px-5 py-10 text-center text-slate-400">
+                        No records match the selected filters.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

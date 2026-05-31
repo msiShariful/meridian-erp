@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head>
+    <title>Reports &amp; Analytics</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('Reports', '', 'Analytics')}"></div>
+
+    <!-- Page header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Reports &amp; Analytics</h1>
+            <p class="text-slate-500 text-sm mt-1">Cross-module performance at a glance.</p>
+        </div>
+        <div class="flex gap-2">
+            <a th:href="@{/reports/custom}" class="px-4 py-2 text-sm font-medium rounded-lg bg-white border border-slate-300 hover:bg-slate-50">Custom Report</a>
+            <a th:href="@{/reports/export/excel(type='invoices')}" class="px-4 py-2 text-sm font-medium rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white">Export to Excel</a>
+            <a th:href="@{/reports/export/pdf(type='invoices')}" class="px-4 py-2 text-sm font-medium rounded-lg bg-red-600 hover:bg-red-700 text-white">Export to PDF</a>
+        </div>
+    </div>
+
+    <!-- KPI cards -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
+        <div th:each="kpi : ${data.kpis}"
+             class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-sm text-slate-500" th:text="${kpi.label}">Label</p>
+                    <p class="text-xl font-bold text-slate-800 mt-1" th:text="${kpi.value}">0</p>
+                </div>
+                <span th:classappend="${kpi.color == 'success'} ? 'bg-emerald-100 text-emerald-600'
+                       : (${kpi.color == 'warning'} ? 'bg-amber-100 text-amber-600'
+                       : (${kpi.color == 'danger'} ? 'bg-red-100 text-red-600' : 'bg-indigo-100 text-brand'))"
+                      class="w-10 h-10 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13h2l2 6 4-14 3 9 2-4h5"/></svg>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Revenue trend -->
+    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm mb-6">
+        <div class="flex items-center justify-between mb-2">
+            <h2 class="font-semibold text-slate-800">Revenue by Month (Paid Invoices)</h2>
+            <span class="text-xs text-slate-400">Last 12 months (৳)</span>
+        </div>
+        <div id="revenueChart"></div>
+    </div>
+
+    <!-- Charts grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+            <h2 class="font-semibold text-slate-800 mb-2">Leads by Status</h2>
+            <div id="leadsChart"></div>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+            <h2 class="font-semibold text-slate-800 mb-2">Deals by Stage</h2>
+            <div id="dealsChart"></div>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+            <h2 class="font-semibold text-slate-800 mb-2">Orders by Status</h2>
+            <div id="ordersChart"></div>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+            <h2 class="font-semibold text-slate-800 mb-2">Tickets by Status</h2>
+            <div id="ticketsChart"></div>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+            <h2 class="font-semibold text-slate-800 mb-2">Employees by Department</h2>
+            <div id="employeesChart"></div>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+            <h2 class="font-semibold text-slate-800 mb-2">Expenses by Category (৳)</h2>
+            <div id="expensesChart"></div>
+        </div>
+    </div>
+
+    <!-- Top products table -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-100">
+            <h2 class="font-semibold text-slate-800">Top Products (by selling price)</h2>
+        </div>
+        <table class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-500 text-left">
+                <tr><th class="px-5 py-2.5 font-medium">Product</th><th class="px-5 py-2.5 font-medium text-right">Selling Price</th></tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                <tr th:each="p : ${data.topProducts}" class="hover:bg-slate-50">
+                    <td class="px-5 py-3 font-medium text-slate-700" th:text="${p.key}">Product</td>
+                    <td class="px-5 py-3 text-slate-700 text-right">৳ <span th:text="${#numbers.formatInteger(p.value, 1, 'COMMA')}">0</span></td>
+                </tr>
+                <tr th:if="${data.topProducts.isEmpty()}"><td class="px-5 py-6 text-center text-slate-400" colspan="2">No products yet.</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const months        = /*[[${data.revenueMonths}]]*/ [];
+        const revenue       = /*[[${data.revenueValues}]]*/ [];
+        const leadLabels    = /*[[${data.leadsByStatus.keySet()}]]*/ [];
+        const leadValues    = /*[[${data.leadsByStatus.values()}]]*/ [];
+        const dealLabels    = /*[[${data.dealsByStage.keySet()}]]*/ [];
+        const dealValues    = /*[[${data.dealsByStage.values()}]]*/ [];
+        const orderLabels   = /*[[${data.ordersByStatus.keySet()}]]*/ [];
+        const orderValues   = /*[[${data.ordersByStatus.values()}]]*/ [];
+        const ticketLabels  = /*[[${data.ticketsByStatus.keySet()}]]*/ [];
+        const ticketValues  = /*[[${data.ticketsByStatus.values()}]]*/ [];
+        const empLabels     = /*[[${data.employeesByDept.keySet()}]]*/ [];
+        const empValues     = /*[[${data.employeesByDept.values()}]]*/ [];
+        const expLabels     = /*[[${data.expensesByCategory.keySet()}]]*/ [];
+        const expValues     = /*[[${data.expensesByCategory.values()}]]*/ [];
+
+        const palette = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#0ea5e9', '#94a3b8'];
+
+        document.addEventListener('DOMContentLoaded', function () {
+            new ApexCharts(document.querySelector("#revenueChart"), {
+                chart: { type: 'area', height: 300, toolbar: { show: false }, fontFamily: 'Inter' },
+                series: [{ name: 'Revenue', data: revenue }],
+                xaxis: { categories: months },
+                colors: ['#6366f1'],
+                dataLabels: { enabled: false },
+                stroke: { curve: 'smooth', width: 3 },
+                fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05 } },
+                grid: { borderColor: '#f1f5f9' }
+            }).render();
+
+            new ApexCharts(document.querySelector("#leadsChart"), {
+                chart: { type: 'donut', height: 300, fontFamily: 'Inter' },
+                series: leadValues, labels: leadLabels, colors: palette,
+                legend: { position: 'bottom' },
+                plotOptions: { pie: { donut: { size: '65%' } } }
+            }).render();
+
+            new ApexCharts(document.querySelector("#dealsChart"), {
+                chart: { type: 'bar', height: 300, toolbar: { show: false }, fontFamily: 'Inter' },
+                series: [{ name: 'Deals', data: dealValues }],
+                xaxis: { categories: dealLabels },
+                colors: ['#6366f1'], dataLabels: { enabled: false },
+                plotOptions: { bar: { borderRadius: 4, columnWidth: '50%' } },
+                grid: { borderColor: '#f1f5f9' }
+            }).render();
+
+            new ApexCharts(document.querySelector("#ordersChart"), {
+                chart: { type: 'donut', height: 300, fontFamily: 'Inter' },
+                series: orderValues, labels: orderLabels, colors: palette,
+                legend: { position: 'bottom' },
+                plotOptions: { pie: { donut: { size: '65%' } } }
+            }).render();
+
+            new ApexCharts(document.querySelector("#ticketsChart"), {
+                chart: { type: 'donut', height: 300, fontFamily: 'Inter' },
+                series: ticketValues, labels: ticketLabels, colors: palette,
+                legend: { position: 'bottom' },
+                plotOptions: { pie: { donut: { size: '65%' } } }
+            }).render();
+
+            new ApexCharts(document.querySelector("#employeesChart"), {
+                chart: { type: 'bar', height: 300, toolbar: { show: false }, fontFamily: 'Inter' },
+                series: [{ name: 'Employees', data: empValues }],
+                xaxis: { categories: empLabels },
+                colors: ['#10b981'], dataLabels: { enabled: false },
+                plotOptions: { bar: { borderRadius: 4, horizontal: true } },
+                grid: { borderColor: '#f1f5f9' }
+            }).render();
+
+            new ApexCharts(document.querySelector("#expensesChart"), {
+                chart: { type: 'bar', height: 300, toolbar: { show: false }, fontFamily: 'Inter' },
+                series: [{ name: 'Expenses', data: expValues }],
+                xaxis: { categories: expLabels },
+                colors: ['#f59e0b'], dataLabels: { enabled: false },
+                plotOptions: { bar: { borderRadius: 4, columnWidth: '50%' } },
+                grid: { borderColor: '#f1f5f9' }
+            }).render();
+        });
+        /*]]>*/
+    </script>
+</div>
+</body>
+</html>
