@@ -18,7 +18,7 @@
     </div>
 
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div th:if="${reviews.isEmpty()}" th:replace="~{layout/components :: emptyState('No reviews yet', 'Create your first performance review.', '/hrm/performance/new', '+ New Review')}"></div>
+        <div th:if="${reviews.isEmpty()}"><div th:replace="~{layout/components :: emptyState('No reviews yet', 'Create your first performance review.', '/hrm/performance/new', '+ New Review')}"></div></div>
 
         <table th:unless="${reviews.isEmpty()}" class="w-full text-sm">
             <thead class="bg-slate-50 text-slate-500 text-left">

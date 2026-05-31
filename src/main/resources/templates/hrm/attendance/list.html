@@ -25,7 +25,7 @@
     </form>
 
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div th:if="${attendance.isEmpty()}" th:replace="~{layout/components :: emptyState('No attendance records', 'Mark attendance to start tracking.', '/hrm/attendance/new', '+ Mark Attendance')}"></div>
+        <div th:if="${attendance.isEmpty()}"><div th:replace="~{layout/components :: emptyState('No attendance records', 'Mark attendance to start tracking.', '/hrm/attendance/new', '+ Mark Attendance')}"></div></div>
 
         <table th:unless="${attendance.isEmpty()}" class="w-full text-sm">
             <thead class="bg-slate-50 text-slate-500 text-left">

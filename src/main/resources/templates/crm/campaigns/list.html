@@ -15,7 +15,7 @@
     <div th:replace="~{layout/components :: listToolbar('/crm/campaigns', ${q})}"></div>
 
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div th:if="${campaigns.isEmpty()}" th:replace="~{layout/components :: emptyState('No campaigns', 'Create your first campaign.', '/crm/campaigns/new', '+ New Campaign')}"></div>
+        <div th:if="${campaigns.isEmpty()}"><div th:replace="~{layout/components :: emptyState('No campaigns', 'Create your first campaign.', '/crm/campaigns/new', '+ New Campaign')}"></div></div>
         <table th:unless="${campaigns.isEmpty()}" class="w-full text-sm">
             <thead class="bg-slate-50 text-slate-500 text-left">
                 <tr><th class="px-5 py-3 font-medium">Campaign</th><th class="px-5 py-3 font-medium">Type</th><th class="px-5 py-3 font-medium">Budget</th><th class="px-5 py-3 font-medium">Revenue</th><th class="px-5 py-3 font-medium">ROI</th><th class="px-5 py-3 font-medium">Status</th><th class="px-5 py-3 font-medium text-right">Actions</th></tr>

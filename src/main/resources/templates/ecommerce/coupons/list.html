@@ -20,7 +20,7 @@
     <div th:replace="~{layout/components :: listToolbar('/ecommerce/coupons', ${q})}"></div>
 
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div th:if="${coupons.isEmpty()}" th:replace="~{layout/components :: emptyState('No coupons found', 'Create discount codes to boost storefront sales.', '/ecommerce/coupons/new', '+ New Coupon')}"></div>
+        <div th:if="${coupons.isEmpty()}"><div th:replace="~{layout/components :: emptyState('No coupons found', 'Create discount codes to boost storefront sales.', '/ecommerce/coupons/new', '+ New Coupon')}"></div></div>
 
         <table th:unless="${coupons.isEmpty()}" class="w-full text-sm">
             <thead class="bg-slate-50 text-slate-500 text-left">

@@ -22,7 +22,7 @@
     <div th:replace="~{layout/components :: listToolbar('/procurement/purchase-orders', ${q})}"></div>
 
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div th:if="${orders.isEmpty()}" th:replace="~{layout/components :: emptyState('No purchase orders found', 'Create a purchase order to send to a vendor.', '/procurement/purchase-orders/new', '+ New Purchase Order')}"></div>
+        <div th:if="${orders.isEmpty()}"><div th:replace="~{layout/components :: emptyState('No purchase orders found', 'Create a purchase order to send to a vendor.', '/procurement/purchase-orders/new', '+ New Purchase Order')}"></div></div>
 
         <table th:unless="${orders.isEmpty()}" class="w-full text-sm">
             <thead class="bg-slate-50 text-slate-500 text-left">

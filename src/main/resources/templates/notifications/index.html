@@ -15,7 +15,7 @@
     </div>
 
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div th:if="${notifications.isEmpty()}" th:replace="~{layout/components :: emptyState('No notifications', 'You are all caught up!', null, null)}"></div>
+        <div th:if="${notifications.isEmpty()}"><div th:replace="~{layout/components :: emptyState('No notifications', 'You are all caught up!', null, null)}"></div></div>
         <ul class="divide-y divide-slate-100">
             <li th:each="n : ${notifications.content}" th:classappend="${n.readFlag} ? '' : 'bg-indigo-50/40'"
                 class="px-5 py-4 flex items-start gap-4 hover:bg-slate-50">

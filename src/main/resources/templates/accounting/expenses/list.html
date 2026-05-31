@@ -20,7 +20,7 @@
     <div th:replace="~{layout/components :: listToolbar('/accounting/expenses', ${q})}"></div>
 
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div th:if="${expenses.isEmpty()}" th:replace="~{layout/components :: emptyState('No expenses found', 'Submit your first expense claim.', '/accounting/expenses/new', '+ New Claim')}"></div>
+        <div th:if="${expenses.isEmpty()}"><div th:replace="~{layout/components :: emptyState('No expenses found', 'Submit your first expense claim.', '/accounting/expenses/new', '+ New Claim')}"></div></div>
 
         <table th:unless="${expenses.isEmpty()}" class="w-full text-sm">
             <thead class="bg-slate-50 text-slate-500 text-left">

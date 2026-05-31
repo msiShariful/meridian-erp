@@ -20,7 +20,7 @@
     <div th:replace="~{layout/components :: listToolbar('/hrm/employees', ${q})}"></div>
 
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div th:if="${employees.isEmpty()}" th:replace="~{layout/components :: emptyState('No employees found', 'Add your first employee to get started.', '/hrm/employees/new', '+ New Employee')}"></div>
+        <div th:if="${employees.isEmpty()}"><div th:replace="~{layout/components :: emptyState('No employees found', 'Add your first employee to get started.', '/hrm/employees/new', '+ New Employee')}"></div></div>
 
         <table th:unless="${employees.isEmpty()}" class="w-full text-sm">
             <thead class="bg-slate-50 text-slate-500 text-left">

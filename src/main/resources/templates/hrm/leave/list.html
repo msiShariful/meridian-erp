@@ -18,7 +18,7 @@
     </div>
 
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div th:if="${leaves.isEmpty()}" th:replace="~{layout/components :: emptyState('No leave requests', 'Apply for leave to get started.', '/hrm/leave/new', '+ Apply for Leave')}"></div>
+        <div th:if="${leaves.isEmpty()}"><div th:replace="~{layout/components :: emptyState('No leave requests', 'Apply for leave to get started.', '/hrm/leave/new', '+ Apply for Leave')}"></div></div>
 
         <table th:unless="${leaves.isEmpty()}" class="w-full text-sm">
             <thead class="bg-slate-50 text-slate-500 text-left">

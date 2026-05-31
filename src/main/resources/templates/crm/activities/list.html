@@ -15,7 +15,7 @@
     <div th:replace="~{layout/components :: listToolbar('/crm/activities', ${q})}"></div>
 
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div th:if="${activities.isEmpty()}" th:replace="~{layout/components :: emptyState('No activities', 'Log your first activity.', '/crm/activities/new', '+ Log Activity')}"></div>
+        <div th:if="${activities.isEmpty()}"><div th:replace="~{layout/components :: emptyState('No activities', 'Log your first activity.', '/crm/activities/new', '+ Log Activity')}"></div></div>
         <table th:unless="${activities.isEmpty()}" class="w-full text-sm">
             <thead class="bg-slate-50 text-slate-500 text-left">
                 <tr><th class="px-5 py-3 font-medium">Type</th><th class="px-5 py-3 font-medium">Subject</th><th class="px-5 py-3 font-medium">Assigned</th><th class="px-5 py-3 font-medium">Due</th><th class="px-5 py-3 font-medium">Status</th><th class="px-5 py-3 font-medium text-right">Actions</th></tr>

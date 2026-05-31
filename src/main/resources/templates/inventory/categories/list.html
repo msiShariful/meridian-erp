@@ -20,7 +20,7 @@
     <div th:replace="~{layout/components :: listToolbar('/inventory/categories', ${q})}"></div>
 
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div th:if="${categories.isEmpty()}" th:replace="~{layout/components :: emptyState('No categories yet', 'Create a category to group your products.', '/inventory/categories/new', '+ New Category')}"></div>
+        <div th:if="${categories.isEmpty()}"><div th:replace="~{layout/components :: emptyState('No categories yet', 'Create a category to group your products.', '/inventory/categories/new', '+ New Category')}"></div></div>
 
         <table th:unless="${categories.isEmpty()}" class="w-full text-sm">
             <thead class="bg-slate-50 text-slate-500 text-left">

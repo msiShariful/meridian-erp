@@ -18,7 +18,7 @@
     </div>
 
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div th:if="${payrolls.isEmpty()}" th:replace="~{layout/components :: emptyState('No payroll records', 'Generate payroll to get started.', '/hrm/payroll/new', '+ Generate Payroll')}"></div>
+        <div th:if="${payrolls.isEmpty()}"><div th:replace="~{layout/components :: emptyState('No payroll records', 'Generate payroll to get started.', '/hrm/payroll/new', '+ Generate Payroll')}"></div></div>
 
         <table th:unless="${payrolls.isEmpty()}" class="w-full text-sm">
             <thead class="bg-slate-50 text-slate-500 text-left">

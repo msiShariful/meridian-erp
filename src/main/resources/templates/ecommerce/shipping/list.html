@@ -18,7 +18,7 @@
     </div>
 
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div th:if="${methods.isEmpty()}" th:replace="~{layout/components :: emptyState('No shipping methods', 'Add a shipping method to offer it at checkout.', '/ecommerce/shipping/new', '+ New Method')}"></div>
+        <div th:if="${methods.isEmpty()}"><div th:replace="~{layout/components :: emptyState('No shipping methods', 'Add a shipping method to offer it at checkout.', '/ecommerce/shipping/new', '+ New Method')}"></div></div>
 
         <table th:unless="${methods.isEmpty()}" class="w-full text-sm">
             <thead class="bg-slate-50 text-slate-500 text-left">

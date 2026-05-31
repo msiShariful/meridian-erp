@@ -15,7 +15,7 @@
     <div th:replace="~{layout/components :: listToolbar('/crm/contacts', ${q})}"></div>
 
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div th:if="${contacts.isEmpty()}" th:replace="~{layout/components :: emptyState('No contacts yet', 'Add your first contact.', '/crm/contacts/new', '+ New Contact')}"></div>
+        <div th:if="${contacts.isEmpty()}"><div th:replace="~{layout/components :: emptyState('No contacts yet', 'Add your first contact.', '/crm/contacts/new', '+ New Contact')}"></div></div>
         <table th:unless="${contacts.isEmpty()}" class="w-full text-sm">
             <thead class="bg-slate-50 text-slate-500 text-left">
                 <tr><th class="px-5 py-3 font-medium">Name</th><th class="px-5 py-3 font-medium">Job title</th><th class="px-5 py-3 font-medium">Company</th><th class="px-5 py-3 font-medium">Email</th><th class="px-5 py-3 font-medium">Phone</th><th class="px-5 py-3 font-medium text-right">Actions</th></tr>

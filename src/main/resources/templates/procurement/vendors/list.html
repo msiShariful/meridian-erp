@@ -22,7 +22,7 @@
     <div th:replace="~{layout/components :: listToolbar('/procurement/vendors', ${q})}"></div>
 
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div th:if="${vendors.isEmpty()}" th:replace="~{layout/components :: emptyState('No vendors found', 'Add your first vendor to start procurement.', '/procurement/vendors/new', '+ New Vendor')}"></div>
+        <div th:if="${vendors.isEmpty()}"><div th:replace="~{layout/components :: emptyState('No vendors found', 'Add your first vendor to start procurement.', '/procurement/vendors/new', '+ New Vendor')}"></div></div>
 
         <table th:unless="${vendors.isEmpty()}" class="w-full text-sm">
             <thead class="bg-slate-50 text-slate-500 text-left">

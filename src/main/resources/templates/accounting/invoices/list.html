@@ -32,7 +32,7 @@
     </form>
 
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div th:if="${invoices.isEmpty()}" th:replace="~{layout/components :: emptyState('No invoices found', 'Create your first invoice to start billing customers.', '/accounting/invoices/new', '+ New Invoice')}"></div>
+        <div th:if="${invoices.isEmpty()}"><div th:replace="~{layout/components :: emptyState('No invoices found', 'Create your first invoice to start billing customers.', '/accounting/invoices/new', '+ New Invoice')}"></div></div>
 
         <table th:unless="${invoices.isEmpty()}" class="w-full text-sm">
             <thead class="bg-slate-50 text-slate-500 text-left">

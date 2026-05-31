@@ -20,7 +20,7 @@
     <div th:replace="~{layout/components :: listToolbar('/accounting/payments', ${q})}"></div>
 
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div th:if="${payments.isEmpty()}" th:replace="~{layout/components :: emptyState('No payments found', 'Record your first payment.', '/accounting/payments/new', '+ Record Payment')}"></div>
+        <div th:if="${payments.isEmpty()}"><div th:replace="~{layout/components :: emptyState('No payments found', 'Record your first payment.', '/accounting/payments/new', '+ Record Payment')}"></div></div>
 
         <table th:unless="${payments.isEmpty()}" class="w-full text-sm">
             <thead class="bg-slate-50 text-slate-500 text-left">

@@ -20,7 +20,7 @@
     <div th:replace="~{layout/components :: listToolbar('/accounting/journal', ${q})}"></div>
 
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div th:if="${entries.isEmpty()}" th:replace="~{layout/components :: emptyState('No journal entries', 'Post your first balanced journal entry.', '/accounting/journal/new', '+ New Entry')}"></div>
+        <div th:if="${entries.isEmpty()}"><div th:replace="~{layout/components :: emptyState('No journal entries', 'Post your first balanced journal entry.', '/accounting/journal/new', '+ New Entry')}"></div></div>
 
         <table th:unless="${entries.isEmpty()}" class="w-full text-sm">
             <thead class="bg-slate-50 text-slate-500 text-left">

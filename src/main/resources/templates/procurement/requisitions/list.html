@@ -22,7 +22,7 @@
     <div th:replace="~{layout/components :: listToolbar('/procurement/requisitions', ${q})}"></div>
 
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div th:if="${requisitions.isEmpty()}" th:replace="~{layout/components :: emptyState('No requisitions found', 'Create a requisition to request goods or services.', '/procurement/requisitions/new', '+ New Requisition')}"></div>
+        <div th:if="${requisitions.isEmpty()}"><div th:replace="~{layout/components :: emptyState('No requisitions found', 'Create a requisition to request goods or services.', '/procurement/requisitions/new', '+ New Requisition')}"></div></div>
 
         <table th:unless="${requisitions.isEmpty()}" class="w-full text-sm">
             <thead class="bg-slate-50 text-slate-500 text-left">

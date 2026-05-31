@@ -22,7 +22,7 @@
     <div th:replace="~{layout/components :: listToolbar('/support/knowledge-base', ${q})}"></div>
 
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div th:if="${articles.isEmpty()}" th:replace="~{layout/components :: emptyState('No articles found', 'Write your first help article to get started.', '/support/knowledge-base/new', '+ New Article')}"></div>
+        <div th:if="${articles.isEmpty()}"><div th:replace="~{layout/components :: emptyState('No articles found', 'Write your first help article to get started.', '/support/knowledge-base/new', '+ New Article')}"></div></div>
 
         <table th:unless="${articles.isEmpty()}" class="w-full text-sm">
             <thead class="bg-slate-50 text-slate-500 text-left">

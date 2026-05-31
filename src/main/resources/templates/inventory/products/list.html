@@ -20,7 +20,7 @@
     <div th:replace="~{layout/components :: listToolbar('/inventory/products', ${q})}"></div>
 
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div th:if="${products.isEmpty()}" th:replace="~{layout/components :: emptyState('No products found', 'Add your first product to start tracking inventory.', '/inventory/products/new', '+ New Product')}"></div>
+        <div th:if="${products.isEmpty()}"><div th:replace="~{layout/components :: emptyState('No products found', 'Add your first product to start tracking inventory.', '/inventory/products/new', '+ New Product')}"></div></div>
 
         <table th:unless="${products.isEmpty()}" class="w-full text-sm">
             <thead class="bg-slate-50 text-slate-500 text-left">

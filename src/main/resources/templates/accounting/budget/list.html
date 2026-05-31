@@ -20,7 +20,7 @@
     <div th:replace="~{layout/components :: listToolbar('/accounting/budget', ${q})}"></div>
 
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div th:if="${budgets.isEmpty()}" th:replace="~{layout/components :: emptyState('No budgets found', 'Create your first budget line.', '/accounting/budget/new', '+ New Budget')}"></div>
+        <div th:if="${budgets.isEmpty()}"><div th:replace="~{layout/components :: emptyState('No budgets found', 'Create your first budget line.', '/accounting/budget/new', '+ New Budget')}"></div></div>
 
         <table th:unless="${budgets.isEmpty()}" class="w-full text-sm">
             <thead class="bg-slate-50 text-slate-500 text-left">

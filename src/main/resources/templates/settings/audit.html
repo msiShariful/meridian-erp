@@ -19,7 +19,7 @@
     </form>
 
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div th:if="${logs.isEmpty()}" th:replace="~{layout/components :: emptyState('No audit entries', 'Actions performed by signed-in users will appear here.', null, null)}"></div>
+        <div th:if="${logs.isEmpty()}"><div th:replace="~{layout/components :: emptyState('No audit entries', 'Actions performed by signed-in users will appear here.', null, null)}"></div></div>
         <table th:unless="${logs.isEmpty()}" class="w-full text-sm">
             <thead class="bg-slate-50 text-slate-500 text-left">
                 <tr><th class="px-5 py-3 font-medium">When</th><th class="px-5 py-3 font-medium">Actor</th><th class="px-5 py-3 font-medium">Action</th><th class="px-5 py-3 font-medium">Entity</th><th class="px-5 py-3 font-medium">Details</th><th class="px-5 py-3 font-medium">IP</th></tr>

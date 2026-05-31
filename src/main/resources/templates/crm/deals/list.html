@@ -18,7 +18,7 @@
     <div th:replace="~{layout/components :: listToolbar('/crm/deals', ${q})}"></div>
 
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div th:if="${deals.isEmpty()}" th:replace="~{layout/components :: emptyState('No deals yet', 'Create your first deal.', '/crm/deals/new', '+ New Deal')}"></div>
+        <div th:if="${deals.isEmpty()}"><div th:replace="~{layout/components :: emptyState('No deals yet', 'Create your first deal.', '/crm/deals/new', '+ New Deal')}"></div></div>
         <table th:unless="${deals.isEmpty()}" class="w-full text-sm">
             <thead class="bg-slate-50 text-slate-500 text-left">
                 <tr><th class="px-5 py-3 font-medium">Deal</th><th class="px-5 py-3 font-medium">Value</th><th class="px-5 py-3 font-medium">Stage</th><th class="px-5 py-3 font-medium">Probability</th><th class="px-5 py-3 font-medium">Close date</th><th class="px-5 py-3 font-medium text-right">Actions</th></tr>

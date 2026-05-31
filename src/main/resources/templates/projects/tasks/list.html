@@ -35,7 +35,7 @@
     </form>
 
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div th:if="${tasks.isEmpty()}" th:replace="~{layout/components :: emptyState('No tasks found', 'Create a task or adjust your filters.', '/projects/tasks/new', '+ New Task')}"></div>
+        <div th:if="${tasks.isEmpty()}"><div th:replace="~{layout/components :: emptyState('No tasks found', 'Create a task or adjust your filters.', '/projects/tasks/new', '+ New Task')}"></div></div>
 
         <table th:unless="${tasks.isEmpty()}" class="w-full text-sm">
             <thead class="bg-slate-50 text-slate-500 text-left">

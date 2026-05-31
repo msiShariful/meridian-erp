@@ -20,7 +20,7 @@
     <div th:replace="~{layout/components :: listToolbar('/ecommerce/customers', ${q})}"></div>
 
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div th:if="${customers.isEmpty()}" th:replace="~{layout/components :: emptyState('No customers found', 'Customers will appear here once they place orders.', '/ecommerce/customers/new', '+ New Customer')}"></div>
+        <div th:if="${customers.isEmpty()}"><div th:replace="~{layout/components :: emptyState('No customers found', 'Customers will appear here once they place orders.', '/ecommerce/customers/new', '+ New Customer')}"></div></div>
 
         <table th:unless="${customers.isEmpty()}" class="w-full text-sm">
             <thead class="bg-slate-50 text-slate-500 text-left">

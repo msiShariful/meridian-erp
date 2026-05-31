@@ -20,7 +20,7 @@
     <div th:replace="~{layout/components :: listToolbar('/hrm/training', ${q})}"></div>
 
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div th:if="${trainings.isEmpty()}" th:replace="~{layout/components :: emptyState('No trainings yet', 'Schedule your first training program.', '/hrm/training/new', '+ New Training')}"></div>
+        <div th:if="${trainings.isEmpty()}"><div th:replace="~{layout/components :: emptyState('No trainings yet', 'Schedule your first training program.', '/hrm/training/new', '+ New Training')}"></div></div>
 
         <table th:unless="${trainings.isEmpty()}" class="w-full text-sm">
             <thead class="bg-slate-50 text-slate-500 text-left">

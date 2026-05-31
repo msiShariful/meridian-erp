@@ -35,7 +35,7 @@
     </form>
 
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div th:if="${tickets.isEmpty()}" th:replace="~{layout/components :: emptyState('No tickets found', 'Create your first ticket to start tracking customer issues.', '/support/tickets/new', '+ New Ticket')}"></div>
+        <div th:if="${tickets.isEmpty()}"><div th:replace="~{layout/components :: emptyState('No tickets found', 'Create your first ticket to start tracking customer issues.', '/support/tickets/new', '+ New Ticket')}"></div></div>
 
         <table th:unless="${tickets.isEmpty()}" class="w-full text-sm">
             <thead class="bg-slate-50 text-slate-500 text-left">

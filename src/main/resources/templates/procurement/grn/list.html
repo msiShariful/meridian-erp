@@ -22,7 +22,7 @@
     <div th:replace="~{layout/components :: listToolbar('/procurement/grn', ${q})}"></div>
 
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div th:if="${grns.isEmpty()}" th:replace="~{layout/components :: emptyState('No GRNs found', 'Record a goods receipt against a purchase order.', '/procurement/grn/new', '+ New GRN')}"></div>
+        <div th:if="${grns.isEmpty()}"><div th:replace="~{layout/components :: emptyState('No GRNs found', 'Record a goods receipt against a purchase order.', '/procurement/grn/new', '+ New GRN')}"></div></div>
 
         <table th:unless="${grns.isEmpty()}" class="w-full text-sm">
             <thead class="bg-slate-50 text-slate-500 text-left">
