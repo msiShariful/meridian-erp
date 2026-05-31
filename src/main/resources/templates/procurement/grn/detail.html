@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title th:text="${grn.grnNumber}">GRN</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('GRN', '/procurement/grn', ${grn.grnNumber})}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div class="flex items-center gap-3">
+            <h1 class="text-2xl font-bold text-slate-800 font-mono" th:text="${grn.grnNumber}">GRN-0001</h1>
+            <span th:replace="~{layout/components :: badge(${grn.status.label}, ${grn.status.color})}"></span>
+        </div>
+        <div class="flex gap-2" sec:authorize="hasAuthority('PROCUREMENT_EDIT')">
+            <a th:href="@{/procurement/grn/{id}/edit(id=${grn.id})}" class="px-4 py-2 text-sm font-medium rounded-lg bg-white border border-slate-300 hover:bg-slate-50">Edit</a>
+            <form th:action="@{/procurement/grn/{id}/delete(id=${grn.id})}" method="post" class="inline" data-confirm="Delete this GRN?">
+                <button class="px-4 py-2 text-sm font-medium rounded-lg bg-white border border-slate-300 text-danger hover:bg-red-50">Delete</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 max-w-3xl">
+        <h2 class="font-semibold text-slate-800 mb-4">Receipt Details</h2>
+        <dl class="grid grid-cols-2 gap-y-4 text-sm">
+            <div>
+                <dt class="text-slate-400">Purchase Order</dt>
+                <dd>
+                    <a th:if="${grn.purchaseOrder != null}" th:href="@{/procurement/purchase-orders/{id}(id=${grn.purchaseOrder.id})}" class="font-mono text-brand hover:underline" th:text="${grn.purchaseOrder.poNumber}">PO-0001</a>
+                    <span th:unless="${grn.purchaseOrder != null}" class="text-slate-700">—</span>
+                </dd>
+            </div>
+            <div><dt class="text-slate-400">Vendor</dt><dd class="text-slate-700" th:text="${grn.purchaseOrder != null and grn.purchaseOrder.vendor != null ? grn.purchaseOrder.vendor.name : '—'}"></dd></div>
+            <div><dt class="text-slate-400">Received date</dt><dd class="text-slate-700" th:text="${#temporals.format(grn.receivedDate, 'dd MMM yyyy')}"></dd></div>
+            <div><dt class="text-slate-400">Received by</dt><dd class="text-slate-700" th:text="${grn.receivedBy} ?: '—'"></dd></div>
+            <div><dt class="text-slate-400">Status</dt><dd><span th:replace="~{layout/components :: badge(${grn.status.label}, ${grn.status.color})}"></span></dd></div>
+        </dl>
+        <div th:if="${grn.notes}" class="mt-4 pt-4 border-t border-slate-100">
+            <dt class="text-slate-400 text-sm mb-1">Notes</dt>
+            <p class="text-sm text-slate-600 whitespace-pre-line" th:text="${grn.notes}"></p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

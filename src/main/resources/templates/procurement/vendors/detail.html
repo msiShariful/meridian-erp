@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title th:text="${vendor.name}">Vendor</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('Vendors', '/procurement/vendors', ${vendor.name})}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div class="flex items-center gap-4">
+            <span class="w-14 h-14 rounded-full bg-brand/15 text-brand flex items-center justify-center text-lg font-bold" th:text="${vendor.initials}">AB</span>
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800" th:text="${vendor.name}">Name</h1>
+                <p class="text-slate-500 text-sm" th:text="${vendor.contactPerson} ?: 'No contact'">Contact</p>
+            </div>
+            <span th:replace="~{layout/components :: badge(${vendor.status.label}, ${vendor.status.color})}"></span>
+        </div>
+        <div class="flex gap-2" sec:authorize="hasAuthority('PROCUREMENT_EDIT')">
+            <a th:href="@{/procurement/vendors/{id}/edit(id=${vendor.id})}" class="px-4 py-2 text-sm font-medium rounded-lg bg-white border border-slate-300 hover:bg-slate-50">Edit</a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="space-y-6">
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                <h2 class="font-semibold text-slate-800 mb-4">Vendor Scorecard</h2>
+                <dl class="grid grid-cols-2 gap-y-4 text-sm">
+                    <div><dt class="text-slate-400">Email</dt><dd class="text-slate-700 break-all" th:text="${vendor.email} ?: '—'"></dd></div>
+                    <div><dt class="text-slate-400">Phone</dt><dd class="text-slate-700" th:text="${vendor.phone} ?: '—'"></dd></div>
+                    <div class="col-span-2"><dt class="text-slate-400">Address</dt><dd class="text-slate-700" th:text="${vendor.address} ?: '—'"></dd></div>
+                    <div><dt class="text-slate-400">Payment terms</dt><dd class="text-slate-700" th:text="${vendor.paymentTerms} ?: '—'"></dd></div>
+                    <div><dt class="text-slate-400">Rating</dt><dd><span th:each="i : ${#numbers.sequence(1,5)}" th:classappend="${i <= vendor.rating} ? 'text-amber-400' : 'text-slate-200'">★</span></dd></div>
+                </dl>
+            </div>
+
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                <h2 class="font-semibold text-slate-800 mb-4">Vendor Bills</h2>
+                <p th:if="${bills.isEmpty()}" class="text-sm text-slate-400">No bills recorded.</p>
+                <ul class="space-y-3">
+                    <li th:each="b : ${bills}" class="flex items-center justify-between text-sm">
+                        <div>
+                            <p class="font-medium text-slate-700 font-mono" th:text="${b.billNumber}">BILL-0001</p>
+                            <p class="text-xs text-slate-400" th:text="${b.dueDate != null ? 'Due ' + #temporals.format(b.dueDate, 'dd MMM yyyy') : '—'}">due</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-slate-700">৳ <span th:text="${#numbers.formatInteger(b.amount, 1, 'COMMA')}">0</span></p>
+                            <span th:replace="~{layout/components :: badge(${b.status.label}, ${b.status.color})}"></span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b border-slate-100">
+                    <h2 class="font-semibold text-slate-800">Purchase Orders</h2>
+                </div>
+                <p th:if="${orders.isEmpty()}" class="text-sm text-slate-400 px-6 py-8">No purchase orders for this vendor yet.</p>
+                <table th:unless="${orders.isEmpty()}" class="w-full text-sm">
+                    <thead class="bg-slate-50 text-slate-500 text-left">
+                        <tr>
+                            <th class="px-6 py-3 font-medium">PO Number</th>
+                            <th class="px-6 py-3 font-medium">Order Date</th>
+                            <th class="px-6 py-3 font-medium">Total</th>
+                            <th class="px-6 py-3 font-medium">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        <tr th:each="po : ${orders}" class="hover:bg-slate-50">
+                            <td class="px-6 py-3">
+                                <a th:href="@{/procurement/purchase-orders/{id}(id=${po.id})}" class="font-mono font-medium text-brand hover:underline" th:text="${po.poNumber}">PO-0001</a>
+                            </td>
+                            <td class="px-6 py-3 text-slate-600" th:text="${#temporals.format(po.orderDate, 'dd MMM yyyy')}">date</td>
+                            <td class="px-6 py-3 text-slate-700">৳ <span th:text="${#numbers.formatInteger(po.total, 1, 'COMMA')}">0</span></td>
+                            <td class="px-6 py-3"><span th:replace="~{layout/components :: badge(${po.status.label}, ${po.status.color})}"></span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

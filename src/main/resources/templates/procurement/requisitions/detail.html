@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title th:text="${requisition.reqNumber}">Requisition</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('Requisitions', '/procurement/requisitions', ${requisition.reqNumber})}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div class="flex items-center gap-3">
+            <h1 class="text-2xl font-bold text-slate-800 font-mono" th:text="${requisition.reqNumber}">REQ-0001</h1>
+            <span th:replace="~{layout/components :: badge(${requisition.status.label}, ${requisition.status.color})}"></span>
+        </div>
+        <div class="flex gap-2" sec:authorize="hasAuthority('PROCUREMENT_EDIT')">
+            <form th:if="${requisition.status.name() == 'DRAFT'}" th:action="@{/procurement/requisitions/{id}/submit(id=${requisition.id})}" method="post">
+                <button class="px-4 py-2 text-sm font-medium rounded-lg bg-sky-600 hover:bg-sky-700 text-white">Submit</button>
+            </form>
+            <form th:if="${requisition.status.name() == 'SUBMITTED'}" th:action="@{/procurement/requisitions/{id}/approve(id=${requisition.id})}" method="post">
+                <button class="px-4 py-2 text-sm font-medium rounded-lg bg-success hover:opacity-90 text-white">Approve</button>
+            </form>
+            <form th:if="${requisition.status.name() == 'SUBMITTED'}" th:action="@{/procurement/requisitions/{id}/reject(id=${requisition.id})}" method="post" data-confirm="Reject this requisition?">
+                <button class="px-4 py-2 text-sm font-medium rounded-lg bg-white border border-slate-300 text-danger hover:bg-red-50">Reject</button>
+            </form>
+            <a th:href="@{/procurement/requisitions/{id}/edit(id=${requisition.id})}" class="px-4 py-2 text-sm font-medium rounded-lg bg-white border border-slate-300 hover:bg-slate-50">Edit</a>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 max-w-3xl">
+        <h2 class="font-semibold text-slate-800 mb-4">Requisition Details</h2>
+        <dl class="grid grid-cols-2 gap-y-4 text-sm">
+            <div><dt class="text-slate-400">Department</dt><dd class="text-slate-700" th:text="${requisition.department} ?: '—'"></dd></div>
+            <div><dt class="text-slate-400">Requested by</dt><dd class="text-slate-700" th:text="${requisition.requestedBy} ?: '—'"></dd></div>
+            <div><dt class="text-slate-400">Estimated cost</dt><dd class="text-slate-700">৳ <span th:text="${#numbers.formatInteger(requisition.estimatedCost, 1, 'COMMA')}">0</span></dd></div>
+            <div><dt class="text-slate-400">Status</dt><dd><span th:replace="~{layout/components :: badge(${requisition.status.label}, ${requisition.status.color})}"></span></dd></div>
+        </dl>
+        <div th:if="${requisition.items}" class="mt-4 pt-4 border-t border-slate-100">
+            <dt class="text-slate-400 text-sm mb-1">Items requested</dt>
+            <p class="text-sm text-slate-600 whitespace-pre-line" th:text="${requisition.items}"></p>
+        </div>
+        <div th:if="${requisition.justification}" class="mt-4 pt-4 border-t border-slate-100">
+            <dt class="text-slate-400 text-sm mb-1">Justification</dt>
+            <p class="text-sm text-slate-600 whitespace-pre-line" th:text="${requisition.justification}"></p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

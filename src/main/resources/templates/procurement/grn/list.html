@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Goods Receipt Notes</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('Procurement', '', 'GRN')}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Goods Receipt Notes</h1>
+            <p class="text-slate-500 text-sm mt-1">Record and track received deliveries.</p>
+        </div>
+        <div class="flex gap-2">
+            <a sec:authorize="hasAuthority('PROCUREMENT_EDIT')" th:href="@{/procurement/grn/new}" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand hover:bg-brand-dark text-white">+ New GRN</a>
+        </div>
+    </div>
+
+    <div th:replace="~{layout/components :: listToolbar('/procurement/grn', ${q})}"></div>
+
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div th:if="${grns.isEmpty()}" th:replace="~{layout/components :: emptyState('No GRNs found', 'Record a goods receipt against a purchase order.', '/procurement/grn/new', '+ New GRN')}"></div>
+
+        <table th:unless="${grns.isEmpty()}" class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-500 text-left">
+                <tr>
+                    <th class="px-5 py-3 font-medium">GRN #</th>
+                    <th class="px-5 py-3 font-medium">PO Number</th>
+                    <th class="px-5 py-3 font-medium">Received Date</th>
+                    <th class="px-5 py-3 font-medium">Received By</th>
+                    <th class="px-5 py-3 font-medium">Status</th>
+                    <th class="px-5 py-3 font-medium text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                <tr th:each="grn : ${grns.content}" class="hover:bg-slate-50">
+                    <td class="px-5 py-3">
+                        <a th:href="@{/procurement/grn/{id}(id=${grn.id})}" class="font-mono font-medium text-brand hover:underline" th:text="${grn.grnNumber}">GRN-0001</a>
+                    </td>
+                    <td class="px-5 py-3 text-slate-600 font-mono" th:text="${grn.purchaseOrder != null ? grn.purchaseOrder.poNumber : '—'}">PO-0001</td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${#temporals.format(grn.receivedDate, 'dd MMM yyyy')}">date</td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${grn.receivedBy} ?: '—'">By</td>
+                    <td class="px-5 py-3">
+                        <span th:replace="~{layout/components :: badge(${grn.status.label}, ${grn.status.color})}"></span>
+                    </td>
+                    <td class="px-5 py-3 text-right whitespace-nowrap">
+                        <a sec:authorize="hasAuthority('PROCUREMENT_EDIT')" th:href="@{/procurement/grn/{id}/edit(id=${grn.id})}" class="text-slate-400 hover:text-brand px-1.5" title="Edit">✎</a>
+                        <form sec:authorize="hasAuthority('PROCUREMENT_EDIT')" th:action="@{/procurement/grn/{id}/delete(id=${grn.id})}" method="post" class="inline" data-confirm="Delete this GRN?">
+                            <button class="text-slate-400 hover:text-danger px-1.5" title="Delete">🗑</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div th:replace="~{layout/components :: pagination(${grns}, '/procurement/grn', ${q})}"></div>
+    </div>
+</div>
+</body>
+</html>

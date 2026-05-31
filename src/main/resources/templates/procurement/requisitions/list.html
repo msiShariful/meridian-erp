@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Requisitions</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('Procurement', '', 'Requisitions')}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Requisitions</h1>
+            <p class="text-slate-500 text-sm mt-1">Internal purchase requests and approvals.</p>
+        </div>
+        <div class="flex gap-2">
+            <a sec:authorize="hasAuthority('PROCUREMENT_EDIT')" th:href="@{/procurement/requisitions/new}" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand hover:bg-brand-dark text-white">+ New Requisition</a>
+        </div>
+    </div>
+
+    <div th:replace="~{layout/components :: listToolbar('/procurement/requisitions', ${q})}"></div>
+
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div th:if="${requisitions.isEmpty()}" th:replace="~{layout/components :: emptyState('No requisitions found', 'Create a requisition to request goods or services.', '/procurement/requisitions/new', '+ New Requisition')}"></div>
+
+        <table th:unless="${requisitions.isEmpty()}" class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-500 text-left">
+                <tr>
+                    <th class="px-5 py-3 font-medium">Req #</th>
+                    <th class="px-5 py-3 font-medium">Department</th>
+                    <th class="px-5 py-3 font-medium">Requested By</th>
+                    <th class="px-5 py-3 font-medium">Estimated Cost</th>
+                    <th class="px-5 py-3 font-medium">Status</th>
+                    <th class="px-5 py-3 font-medium text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                <tr th:each="req : ${requisitions.content}" class="hover:bg-slate-50">
+                    <td class="px-5 py-3">
+                        <a th:href="@{/procurement/requisitions/{id}(id=${req.id})}" class="font-mono font-medium text-brand hover:underline" th:text="${req.reqNumber}">REQ-0001</a>
+                    </td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${req.department} ?: '—'">Dept</td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${req.requestedBy} ?: '—'">By</td>
+                    <td class="px-5 py-3 text-slate-700">৳ <span th:text="${#numbers.formatInteger(req.estimatedCost, 1, 'COMMA')}">0</span></td>
+                    <td class="px-5 py-3">
+                        <span th:replace="~{layout/components :: badge(${req.status.label}, ${req.status.color})}"></span>
+                    </td>
+                    <td class="px-5 py-3 text-right whitespace-nowrap">
+                        <a sec:authorize="hasAuthority('PROCUREMENT_EDIT')" th:href="@{/procurement/requisitions/{id}/edit(id=${req.id})}" class="text-slate-400 hover:text-brand px-1.5" title="Edit">✎</a>
+                        <form sec:authorize="hasAuthority('PROCUREMENT_EDIT')" th:action="@{/procurement/requisitions/{id}/delete(id=${req.id})}" method="post" class="inline" data-confirm="Delete this requisition?">
+                            <button class="text-slate-400 hover:text-danger px-1.5" title="Delete">🗑</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div th:replace="~{layout/components :: pagination(${requisitions}, '/procurement/requisitions', ${q})}"></div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Purchase Orders</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('Procurement', '', 'Purchase Orders')}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Purchase Orders</h1>
+            <p class="text-slate-500 text-sm mt-1">Issue and track orders to vendors.</p>
+        </div>
+        <div class="flex gap-2">
+            <a sec:authorize="hasAuthority('PROCUREMENT_EDIT')" th:href="@{/procurement/purchase-orders/new}" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand hover:bg-brand-dark text-white">+ New Purchase Order</a>
+        </div>
+    </div>
+
+    <div th:replace="~{layout/components :: listToolbar('/procurement/purchase-orders', ${q})}"></div>
+
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div th:if="${orders.isEmpty()}" th:replace="~{layout/components :: emptyState('No purchase orders found', 'Create a purchase order to send to a vendor.', '/procurement/purchase-orders/new', '+ New Purchase Order')}"></div>
+
+        <table th:unless="${orders.isEmpty()}" class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-500 text-left">
+                <tr>
+                    <th class="px-5 py-3 font-medium">PO #</th>
+                    <th class="px-5 py-3 font-medium">Vendor</th>
+                    <th class="px-5 py-3 font-medium">Order Date</th>
+                    <th class="px-5 py-3 font-medium">Total</th>
+                    <th class="px-5 py-3 font-medium">Status</th>
+                    <th class="px-5 py-3 font-medium text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                <tr th:each="po : ${orders.content}" class="hover:bg-slate-50">
+                    <td class="px-5 py-3">
+                        <a th:href="@{/procurement/purchase-orders/{id}(id=${po.id})}" class="font-mono font-medium text-brand hover:underline" th:text="${po.poNumber}">PO-0001</a>
+                    </td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${po.vendor != null ? po.vendor.name : '—'}">Vendor</td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${#temporals.format(po.orderDate, 'dd MMM yyyy')}">date</td>
+                    <td class="px-5 py-3 text-slate-700">৳ <span th:text="${#numbers.formatInteger(po.total, 1, 'COMMA')}">0</span></td>
+                    <td class="px-5 py-3">
+                        <span th:replace="~{layout/components :: badge(${po.status.label}, ${po.status.color})}"></span>
+                    </td>
+                    <td class="px-5 py-3 text-right whitespace-nowrap">
+                        <a sec:authorize="hasAuthority('PROCUREMENT_EDIT')" th:href="@{/procurement/purchase-orders/{id}/edit(id=${po.id})}" class="text-slate-400 hover:text-brand px-1.5" title="Edit">✎</a>
+                        <form sec:authorize="hasAuthority('PROCUREMENT_EDIT')" th:action="@{/procurement/purchase-orders/{id}/delete(id=${po.id})}" method="post" class="inline" data-confirm="Delete this purchase order?">
+                            <button class="text-slate-400 hover:text-danger px-1.5" title="Delete">🗑</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div th:replace="~{layout/components :: pagination(${orders}, '/procurement/purchase-orders', ${q})}"></div>
+    </div>
+</div>
+</body>
+</html>
