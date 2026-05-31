@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Leads</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('CRM', '', 'Leads')}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Leads</h1>
+            <p class="text-slate-500 text-sm mt-1">Track and qualify your sales prospects.</p>
+        </div>
+        <div class="flex gap-2">
+            <a th:href="@{/crm/leads/kanban}" class="px-4 py-2 text-sm font-medium rounded-lg bg-white border border-slate-300 hover:bg-slate-50">Kanban view</a>
+            <a sec:authorize="hasAuthority('CRM_EDIT')" th:href="@{/crm/leads/new}" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand hover:bg-brand-dark text-white">+ New Lead</a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <form th:action="@{/crm/leads}" method="get" class="flex flex-col sm:flex-row gap-3 mb-4">
+        <div class="relative flex-1 max-w-sm">
+            <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"/></svg>
+            <input type="search" name="q" th:value="${q}" placeholder="Search leads…"
+                   class="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-300 focus:border-brand focus:ring-1 focus:ring-brand outline-none">
+        </div>
+        <select name="status" onchange="this.form.submit()"
+                class="px-3 py-2 text-sm rounded-lg border border-slate-300 focus:border-brand outline-none">
+            <option value="">All statuses</option>
+            <option th:each="s : ${statuses}" th:value="${s}" th:text="${s.label}" th:selected="${s == statusFilter}"></option>
+        </select>
+        <button class="px-4 py-2 text-sm rounded-lg bg-slate-800 text-white">Filter</button>
+    </form>
+
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div th:if="${leads.isEmpty()}" th:replace="~{layout/components :: emptyState('No leads found', 'Create your first lead to start building your pipeline.', '/crm/leads/new', '+ New Lead')}"></div>
+
+        <table th:unless="${leads.isEmpty()}" class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-500 text-left">
+                <tr>
+                    <th class="px-5 py-3 font-medium">Lead</th>
+                    <th class="px-5 py-3 font-medium">Company</th>
+                    <th class="px-5 py-3 font-medium">Source</th>
+                    <th class="px-5 py-3 font-medium">Score</th>
+                    <th class="px-5 py-3 font-medium">Value</th>
+                    <th class="px-5 py-3 font-medium">Status</th>
+                    <th class="px-5 py-3 font-medium text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                <tr th:each="lead : ${leads.content}" class="hover:bg-slate-50">
+                    <td class="px-5 py-3">
+                        <a th:href="@{/crm/leads/{id}(id=${lead.id})}" class="flex items-center gap-3 group">
+                            <span class="w-8 h-8 rounded-full bg-brand/15 text-brand flex items-center justify-center text-xs font-semibold" th:text="${lead.initials}">AB</span>
+                            <span>
+                                <span class="font-medium text-slate-700 group-hover:text-brand" th:text="${lead.name}">Name</span>
+                                <span class="block text-xs text-slate-400" th:text="${lead.email}">email</span>
+                            </span>
+                        </a>
+                    </td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${lead.companyName} ?: '—'">Company</td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${lead.source.label}">Source</td>
+                    <td class="px-5 py-3 whitespace-nowrap">
+                        <span th:each="i : ${#numbers.sequence(1,5)}"
+                              th:classappend="${i <= lead.score} ? 'text-amber-400' : 'text-slate-200'">★</span>
+                    </td>
+                    <td class="px-5 py-3 text-slate-700">৳ <span th:text="${#numbers.formatInteger(lead.estimatedValue, 1, 'COMMA')}">0</span></td>
+                    <td class="px-5 py-3">
+                        <span th:replace="~{layout/components :: badge(${lead.status.label}, ${lead.status.color})}"></span>
+                    </td>
+                    <td class="px-5 py-3 text-right whitespace-nowrap">
+                        <a sec:authorize="hasAuthority('CRM_EDIT')" th:href="@{/crm/leads/{id}/edit(id=${lead.id})}" class="text-slate-400 hover:text-brand px-1.5" title="Edit">✎</a>
+                        <form sec:authorize="hasAuthority('CRM_EDIT')" th:action="@{/crm/leads/{id}/delete(id=${lead.id})}" method="post" class="inline" data-confirm="Delete this lead?">
+                            <button class="text-slate-400 hover:text-danger px-1.5" title="Delete">🗑</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div th:replace="~{layout/components :: pagination(${leads}, '/crm/leads', ${q})}"></div>
+    </div>
+</div>
+</body>
+</html>

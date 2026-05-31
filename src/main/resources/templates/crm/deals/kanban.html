@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <title>Deal Pipeline</title>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+</head>
+<body>
+<div layout:fragment="content">
+    <div th:replace="~{layout/components :: breadcrumb('Deals', '/crm/deals', 'Pipeline')}"></div>
+    <div class="flex items-center justify-between mb-6">
+        <div><h1 class="text-2xl font-bold text-slate-800">Deal Pipeline</h1>
+            <p class="text-slate-500 text-sm mt-1">Drag deals across stages to advance them.</p></div>
+        <a th:href="@{/crm/deals}" class="px-4 py-2 text-sm font-medium rounded-lg bg-white border border-slate-300 hover:bg-slate-50">List view</a>
+    </div>
+
+    <div class="flex gap-4 overflow-x-auto pb-4">
+        <div th:each="col : ${board}" class="flex-shrink-0 w-72" th:attr="data-stage=${col.key}"
+             ondragover="event.preventDefault(); this.classList.add('ring-2','ring-brand/40')"
+             ondragleave="this.classList.remove('ring-2','ring-brand/40')"
+             ondrop="dropDeal(event, this)">
+            <div class="flex items-center justify-between mb-1 px-1">
+                <h3 class="font-semibold text-slate-700 text-sm" th:text="${col.key.label}">Stage</h3>
+                <span class="text-xs bg-slate-200 text-slate-600 rounded-full px-2 py-0.5" th:text="${col.value.size()}">0</span>
+            </div>
+            <p class="text-xs text-emerald-600 font-medium mb-2 px-1">৳ <span th:text="${#numbers.formatInteger(totals.get(col.key), 1, 'COMMA')}">0</span></p>
+            <div class="space-y-3 min-h-[120px] rounded-xl bg-slate-50 p-2">
+                <div th:each="d : ${col.value}" class="bg-white rounded-lg border border-slate-200 p-3 shadow-sm cursor-move hover:shadow-md"
+                     draggable="true" th:attr="data-id=${d.id}"
+                     ondragstart="event.dataTransfer.setData('text/plain', this.getAttribute('data-id'))">
+                    <a th:href="@{/crm/deals/{id}(id=${d.id})}" class="font-medium text-slate-700 text-sm hover:text-brand" th:text="${d.title}">Title</a>
+                    <p class="text-xs text-emerald-600 font-medium mt-1">৳ <span th:text="${#numbers.formatInteger(d.value, 1, 'COMMA')}">0</span></p>
+                </div>
+                <p th:if="${col.value.isEmpty()}" class="text-center text-xs text-slate-300 py-6">Drop deals here</p>
+            </div>
+        </div>
+    </div>
+
+    <script layout:fragment="scripts">
+        const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+        function dropDeal(ev, col) {
+            ev.preventDefault();
+            col.classList.remove('ring-2','ring-brand/40');
+            const id = ev.dataTransfer.getData('text/plain');
+            const stage = col.getAttribute('data-stage');
+            const card = document.querySelector(`[data-id="${id}"]`);
+            if (card) col.querySelector('.space-y-3').prepend(card);
+            fetch(`/crm/deals/${id}/stage?stage=${stage}`, { method: 'POST', headers: { [csrfHeader]: csrfToken } })
+                .then(r => { if (!r.ok) location.reload(); });
+        }
+    </script>
+</div>
+</body>
+</html>

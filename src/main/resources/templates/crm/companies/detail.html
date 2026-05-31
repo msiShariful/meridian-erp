@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title th:text="${company.name}">Company</title></head>
+<body>
+<div layout:fragment="content">
+    <div th:replace="~{layout/components :: breadcrumb('Companies', '/crm/companies', ${company.name})}"></div>
+
+    <div class="flex items-center justify-between gap-4 mb-6">
+        <div class="flex items-center gap-4">
+            <span class="w-14 h-14 rounded-lg bg-brand/15 text-brand flex items-center justify-center text-lg font-bold overflow-hidden">
+                <img th:if="${company.logo}" th:src="@{${company.logo}}" class="w-full h-full object-cover" alt="">
+                <span th:unless="${company.logo}" th:text="${company.initials}">AB</span>
+            </span>
+            <div><h1 class="text-2xl font-bold text-slate-800" th:text="${company.name}">Name</h1>
+                <p class="text-slate-500 text-sm" th:text="${company.industry} ?: 'No industry'">Industry</p></div>
+        </div>
+        <a sec:authorize="hasAuthority('CRM_EDIT')" th:href="@{/crm/companies/{id}/edit(id=${company.id})}" class="px-4 py-2 text-sm font-medium rounded-lg bg-white border border-slate-300 hover:bg-slate-50">Edit</a>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+            <h2 class="font-semibold text-slate-800 mb-4">Details</h2>
+            <dl class="space-y-3 text-sm">
+                <div><dt class="text-slate-400">Website</dt><dd class="text-brand" th:text="${company.website} ?: '—'"></dd></div>
+                <div><dt class="text-slate-400">Email</dt><dd class="text-slate-700" th:text="${company.email} ?: '—'"></dd></div>
+                <div><dt class="text-slate-400">Phone</dt><dd class="text-slate-700" th:text="${company.phone} ?: '—'"></dd></div>
+                <div><dt class="text-slate-400">Size</dt><dd class="text-slate-700" th:text="${company.companySize} ?: '—'"></dd></div>
+                <div><dt class="text-slate-400">Address</dt><dd class="text-slate-700" th:text="${company.address} ?: '—'"></dd></div>
+            </dl>
+        </div>
+        <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm">
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                <h2 class="font-semibold text-slate-800">Contacts</h2>
+                <span class="text-xs text-slate-400" th:text="${contacts.size()} + ' contacts'">0</span>
+            </div>
+            <p th:if="${contacts.isEmpty()}" class="text-sm text-slate-400 p-6">No contacts linked to this company.</p>
+            <ul th:unless="${contacts.isEmpty()}" class="divide-y divide-slate-100">
+                <li th:each="ct : ${contacts}" class="px-6 py-3 flex items-center gap-3">
+                    <span class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-xs font-semibold" th:text="${ct.initials}">AB</span>
+                    <div><a th:href="@{/crm/contacts/{id}(id=${ct.id})}" class="text-sm font-medium text-slate-700 hover:text-brand" th:text="${ct.fullName}">Name</a>
+                        <p class="text-xs text-slate-400" th:text="${ct.jobTitle} ?: ''">Title</p></div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+</body>
+</html>

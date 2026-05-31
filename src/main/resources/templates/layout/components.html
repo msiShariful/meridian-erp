@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- Breadcrumb: Dashboard / parent / current.
+     parentHref empty string => parent rendered as plain text (no link). -->
+<nav th:fragment="breadcrumb(parentLabel, parentHref, current)" class="text-sm text-slate-400 mb-2 flex items-center flex-wrap gap-1">
+    <a th:href="@{/dashboard}" class="hover:text-brand">Dashboard</a>
+    <span class="text-slate-300">/</span>
+    <a th:if="${parentHref != null and parentHref != ''}" th:href="@{${parentHref}}" class="hover:text-brand" th:text="${parentLabel}">Parent</a>
+    <span th:unless="${parentHref != null and parentHref != ''}" class="text-slate-600" th:text="${parentLabel}">Parent</span>
+    <th:block th:if="${current != null and current != ''}">
+        <span class="text-slate-300">/</span>
+        <span class="text-slate-600" th:text="${current}">Current</span>
+    </th:block>
+</nav>
+
+<!-- Page header with title, subtitle. Action buttons supplied by caller via the
+     'actions' fragment slot using th:insert. -->
+<div th:fragment="pageHeader(title, subtitle)" class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <div>
+        <h1 class="text-2xl font-bold text-slate-800" th:text="${title}">Title</h1>
+        <p class="text-slate-500 text-sm mt-1" th:text="${subtitle}" th:if="${subtitle}">Subtitle</p>
+    </div>
+    <div class="flex gap-2" th:remove="tag">
+        <th:block th:insert="${actionFragment} ?: ~{::empty}"></th:block>
+    </div>
+</div>
+
+<!-- Status badge -->
+<span th:fragment="badge(text, color)"
+      th:text="${text}"
+      th:classappend="${color == 'success'} ? 'bg-emerald-100 text-emerald-700'
+        : (${color == 'warning'} ? 'bg-amber-100 text-amber-700'
+        : (${color == 'danger'} ? 'bg-red-100 text-red-700'
+        : (${color == 'info'} ? 'bg-sky-100 text-sky-700'
+        : (${color == 'brand'} ? 'bg-indigo-100 text-brand' : 'bg-slate-100 text-slate-600'))))"
+      class="inline-block px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap">Status</span>
+
+<!-- Empty state -->
+<div th:fragment="emptyState(title, message, actionHref, actionLabel)"
+     class="text-center py-16 px-6">
+    <div class="w-16 h-16 mx-auto rounded-full bg-slate-100 flex items-center justify-center">
+        <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+    </div>
+    <h3 class="mt-4 font-semibold text-slate-700" th:text="${title}">Nothing here yet</h3>
+    <p class="text-sm text-slate-500 mt-1" th:text="${message}">Get started by creating one.</p>
+    <a th:if="${actionHref}" th:href="@{${actionHref}}"
+       class="inline-block mt-4 px-4 py-2 rounded-lg bg-brand hover:bg-brand-dark text-white text-sm font-medium"
+       th:text="${actionLabel}">Create</a>
+</div>
+
+<!-- Pagination for a Spring Data Page. baseUrl is the list path; extra query params
+     should be appended by caller via the 'q' param. -->
+<div th:fragment="pagination(page, baseUrl, q)"
+     th:if="${page != null and page.totalPages > 1}"
+     class="flex items-center justify-between px-5 py-3 border-t border-slate-100 text-sm">
+    <p class="text-slate-500">
+        Showing <span th:text="${page.numberOfElements}">0</span> of
+        <span th:text="${page.totalElements}">0</span> entries
+    </p>
+    <div class="flex items-center gap-1">
+        <a th:href="@{${baseUrl}(page=${page.number - 1}, q=${q})}"
+           th:classappend="${page.first} ? 'pointer-events-none opacity-40' : ''"
+           class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50">Prev</a>
+        <span class="px-3 py-1.5 text-slate-600">
+            Page <span th:text="${page.number + 1}">1</span> / <span th:text="${page.totalPages}">1</span>
+        </span>
+        <a th:href="@{${baseUrl}(page=${page.number + 1}, q=${q})}"
+           th:classappend="${page.last} ? 'pointer-events-none opacity-40' : ''"
+           class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50">Next</a>
+    </div>
+</div>
+
+<!-- Search + export toolbar for list pages -->
+<div th:fragment="listToolbar(baseUrl, q)" class="flex flex-col sm:flex-row gap-3 mb-4">
+    <form th:action="@{${baseUrl}}" method="get" class="relative flex-1 max-w-sm">
+        <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"/></svg>
+        <input type="search" name="q" th:value="${q}" placeholder="Search…"
+               class="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-300 focus:border-brand focus:ring-1 focus:ring-brand outline-none">
+    </form>
+</div>
+
+</body>
+</html>

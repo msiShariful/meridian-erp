@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title th:text="${contact.fullName}">Contact</title></head>
+<body>
+<div layout:fragment="content">
+    <div th:replace="~{layout/components :: breadcrumb('Contacts', '/crm/contacts', ${contact.fullName})}"></div>
+    <div class="flex items-center justify-between gap-4 mb-6">
+        <div class="flex items-center gap-4">
+            <span class="w-14 h-14 rounded-full bg-brand/15 text-brand flex items-center justify-center text-lg font-bold" th:text="${contact.initials}">AB</span>
+            <div><h1 class="text-2xl font-bold text-slate-800" th:text="${contact.fullName}">Name</h1>
+                <p class="text-slate-500 text-sm" th:text="${contact.jobTitle} ?: ''">Title</p></div>
+        </div>
+        <a sec:authorize="hasAuthority('CRM_EDIT')" th:href="@{/crm/contacts/{id}/edit(id=${contact.id})}" class="px-4 py-2 text-sm font-medium rounded-lg bg-white border border-slate-300 hover:bg-slate-50">Edit</a>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 max-w-2xl">
+        <h2 class="font-semibold text-slate-800 mb-4">Contact Information</h2>
+        <dl class="grid grid-cols-2 gap-y-4 text-sm">
+            <div><dt class="text-slate-400">Email</dt><dd class="text-slate-700" th:text="${contact.email} ?: '—'"></dd></div>
+            <div><dt class="text-slate-400">Phone</dt><dd class="text-slate-700" th:text="${contact.phone} ?: '—'"></dd></div>
+            <div><dt class="text-slate-400">Company</dt><dd class="text-slate-700" th:text="${contact.company != null ? contact.company.name : '—'}"></dd></div>
+            <div><dt class="text-slate-400">Tags</dt><dd class="text-slate-700" th:text="${contact.tags} ?: '—'"></dd></div>
+        </dl>
+    </div>
+</div>
+</body>
+</html>

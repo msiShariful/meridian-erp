@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Activities</title></head>
+<body>
+<div layout:fragment="content">
+    <div th:replace="~{layout/components :: breadcrumb('CRM', '', 'Activities')}"></div>
+    <div class="flex items-center justify-between gap-4 mb-6">
+        <div><h1 class="text-2xl font-bold text-slate-800">Activities</h1>
+            <p class="text-slate-500 text-sm mt-1">Calls, emails, meetings and tasks.</p></div>
+        <a sec:authorize="hasAuthority('CRM_EDIT')" th:href="@{/crm/activities/new}" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand hover:bg-brand-dark text-white">+ Log Activity</a>
+    </div>
+    <div th:replace="~{layout/components :: listToolbar('/crm/activities', ${q})}"></div>
+
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div th:if="${activities.isEmpty()}" th:replace="~{layout/components :: emptyState('No activities', 'Log your first activity.', '/crm/activities/new', '+ Log Activity')}"></div>
+        <table th:unless="${activities.isEmpty()}" class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-500 text-left">
+                <tr><th class="px-5 py-3 font-medium">Type</th><th class="px-5 py-3 font-medium">Subject</th><th class="px-5 py-3 font-medium">Assigned</th><th class="px-5 py-3 font-medium">Due</th><th class="px-5 py-3 font-medium">Status</th><th class="px-5 py-3 font-medium text-right">Actions</th></tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                <tr th:each="a : ${activities.content}" class="hover:bg-slate-50">
+                    <td class="px-5 py-3"><span class="px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-medium" th:text="${a.type.label}">Type</span></td>
+                    <td class="px-5 py-3 font-medium text-slate-700" th:classappend="${a.completed} ? 'line-through text-slate-400' : ''" th:text="${a.subject}">Subject</td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${a.assignedTo} ?: '—'">Assigned</td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${a.dueDate != null ? #temporals.format(a.dueDate, 'dd MMM, HH:mm') : '—'}">Due</td>
+                    <td class="px-5 py-3"><span th:replace="~{layout/components :: badge(${a.completed} ? 'Done' : 'Pending', ${a.completed} ? 'success' : 'warning')}"></span></td>
+                    <td class="px-5 py-3 text-right whitespace-nowrap" sec:authorize="hasAuthority('CRM_EDIT')">
+                        <form th:action="@{/crm/activities/{id}/toggle(id=${a.id})}" method="post" class="inline"><button class="text-slate-400 hover:text-success px-1.5" title="Toggle done">✓</button></form>
+                        <form th:action="@{/crm/activities/{id}/delete(id=${a.id})}" method="post" class="inline" data-confirm="Delete this activity?"><button class="text-slate-400 hover:text-danger px-1.5">🗑</button></form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div th:replace="~{layout/components :: pagination(${activities}, '/crm/activities', ${q})}"></div>
+    </div>
+</div>
+</body>
+</html>

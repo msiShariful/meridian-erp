@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title th:text="${lead.name}">Lead</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('Leads', '/crm/leads', ${lead.name})}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div class="flex items-center gap-4">
+            <span class="w-14 h-14 rounded-full bg-brand/15 text-brand flex items-center justify-center text-lg font-bold" th:text="${lead.initials}">AB</span>
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800" th:text="${lead.name}">Name</h1>
+                <p class="text-slate-500 text-sm" th:text="${lead.companyName} ?: 'No company'">Company</p>
+            </div>
+            <span th:replace="~{layout/components :: badge(${lead.status.label}, ${lead.status.color})}"></span>
+        </div>
+        <div class="flex gap-2" sec:authorize="hasAuthority('CRM_EDIT')">
+            <form th:action="@{/crm/leads/{id}/convert(id=${lead.id})}" method="post" data-confirm="Convert this lead to a contact and deal?">
+                <button class="px-4 py-2 text-sm font-medium rounded-lg bg-success hover:opacity-90 text-white">Convert</button>
+            </form>
+            <a th:href="@{/crm/leads/{id}/edit(id=${lead.id})}" class="px-4 py-2 text-sm font-medium rounded-lg bg-white border border-slate-300 hover:bg-slate-50">Edit</a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                <h2 class="font-semibold text-slate-800 mb-4">Lead Details</h2>
+                <dl class="grid grid-cols-2 gap-y-4 text-sm">
+                    <div><dt class="text-slate-400">Email</dt><dd class="text-slate-700" th:text="${lead.email} ?: '—'"></dd></div>
+                    <div><dt class="text-slate-400">Phone</dt><dd class="text-slate-700" th:text="${lead.phone} ?: '—'"></dd></div>
+                    <div><dt class="text-slate-400">Source</dt><dd class="text-slate-700" th:text="${lead.source.label}"></dd></div>
+                    <div><dt class="text-slate-400">Assigned to</dt><dd class="text-slate-700" th:text="${lead.assignedTo} ?: '—'"></dd></div>
+                    <div><dt class="text-slate-400">Estimated value</dt><dd class="text-slate-700">৳ <span th:text="${#numbers.formatInteger(lead.estimatedValue, 1, 'COMMA')}">0</span></dd></div>
+                    <div><dt class="text-slate-400">Score</dt><dd><span th:each="i : ${#numbers.sequence(1,5)}" th:classappend="${i <= lead.score} ? 'text-amber-400' : 'text-slate-200'">★</span></dd></div>
+                </dl>
+                <div th:if="${lead.notes}" class="mt-4 pt-4 border-t border-slate-100">
+                    <dt class="text-slate-400 text-sm mb-1">Notes</dt>
+                    <p class="text-sm text-slate-600 whitespace-pre-line" th:text="${lead.notes}"></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-6">
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                <h2 class="font-semibold text-slate-800 mb-4">Activity Timeline</h2>
+                <p th:if="${activities.isEmpty()}" class="text-sm text-slate-400">No activities logged yet.</p>
+                <ul class="space-y-4">
+                    <li th:each="a : ${activities}" class="flex gap-3">
+                        <span class="w-2 h-2 mt-1.5 rounded-full bg-brand shrink-0"></span>
+                        <div class="text-sm">
+                            <p class="font-medium text-slate-700" th:text="${a.subject}">Subject</p>
+                            <p class="text-xs text-slate-400" th:text="${a.type.label} + ' · ' + ${#temporals.format(a.createdAt, 'dd MMM yyyy')}">type</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

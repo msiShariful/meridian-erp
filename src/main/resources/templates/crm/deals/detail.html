@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title th:text="${deal.title}">Deal</title></head>
+<body>
+<div layout:fragment="content">
+    <div th:replace="~{layout/components :: breadcrumb('Deals', '/crm/deals', ${deal.title})}"></div>
+    <div class="flex items-center justify-between gap-4 mb-6">
+        <div><h1 class="text-2xl font-bold text-slate-800" th:text="${deal.title}">Title</h1>
+            <p class="text-slate-500 text-sm">Owner: <span th:text="${deal.owner} ?: '—'"></span></p></div>
+        <div class="flex items-center gap-3">
+            <span th:replace="~{layout/components :: badge(${deal.stage.label}, ${deal.stage.color})}"></span>
+            <a sec:authorize="hasAuthority('CRM_EDIT')" th:href="@{/crm/deals/{id}/edit(id=${deal.id})}" class="px-4 py-2 text-sm font-medium rounded-lg bg-white border border-slate-300 hover:bg-slate-50">Edit</a>
+        </div>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5"><p class="text-sm text-slate-500">Deal value</p><p class="text-2xl font-bold text-slate-800 mt-1">৳ <span th:text="${#numbers.formatInteger(deal.value, 1, 'COMMA')}">0</span></p></div>
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5"><p class="text-sm text-slate-500">Probability</p><p class="text-2xl font-bold text-brand mt-1" th:text="${deal.probability} + '%'">0%</p></div>
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5"><p class="text-sm text-slate-500">Expected close</p><p class="text-lg font-semibold text-slate-800 mt-2" th:text="${deal.expectedCloseDate != null ? #temporals.format(deal.expectedCloseDate, 'dd MMM yyyy') : '—'}">—</p></div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 max-w-2xl">
+        <h2 class="font-semibold text-slate-800 mb-4">Linked Records</h2>
+        <dl class="grid grid-cols-2 gap-y-4 text-sm">
+            <div><dt class="text-slate-400">Contact</dt><dd class="text-slate-700" th:text="${deal.contact != null ? deal.contact.fullName : '—'}"></dd></div>
+            <div><dt class="text-slate-400">Company</dt><dd class="text-slate-700" th:text="${deal.company != null ? deal.company.name : '—'}"></dd></div>
+            <div class="col-span-2"><dt class="text-slate-400">Win/Loss reason</dt><dd class="text-slate-700" th:text="${deal.wonLostReason} ?: '—'"></dd></div>
+        </dl>
+    </div>
+</div>
+</body>
+</html>

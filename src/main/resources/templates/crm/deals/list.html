@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Deals</title></head>
+<body>
+<div layout:fragment="content">
+    <div th:replace="~{layout/components :: breadcrumb('CRM', '', 'Deals')}"></div>
+    <div class="flex items-center justify-between gap-4 mb-6">
+        <div><h1 class="text-2xl font-bold text-slate-800">Deals</h1>
+            <p class="text-slate-500 text-sm mt-1">Your sales opportunities.</p></div>
+        <div class="flex gap-2">
+            <a th:href="@{/crm/deals/kanban}" class="px-4 py-2 text-sm font-medium rounded-lg bg-white border border-slate-300 hover:bg-slate-50">Pipeline view</a>
+            <a sec:authorize="hasAuthority('CRM_EDIT')" th:href="@{/crm/deals/new}" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand hover:bg-brand-dark text-white">+ New Deal</a>
+        </div>
+    </div>
+    <div th:replace="~{layout/components :: listToolbar('/crm/deals', ${q})}"></div>
+
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div th:if="${deals.isEmpty()}" th:replace="~{layout/components :: emptyState('No deals yet', 'Create your first deal.', '/crm/deals/new', '+ New Deal')}"></div>
+        <table th:unless="${deals.isEmpty()}" class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-500 text-left">
+                <tr><th class="px-5 py-3 font-medium">Deal</th><th class="px-5 py-3 font-medium">Value</th><th class="px-5 py-3 font-medium">Stage</th><th class="px-5 py-3 font-medium">Probability</th><th class="px-5 py-3 font-medium">Close date</th><th class="px-5 py-3 font-medium text-right">Actions</th></tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                <tr th:each="d : ${deals.content}" class="hover:bg-slate-50">
+                    <td class="px-5 py-3"><a th:href="@{/crm/deals/{id}(id=${d.id})}" class="font-medium text-slate-700 hover:text-brand" th:text="${d.title}">Title</a>
+                        <span class="block text-xs text-slate-400" th:text="${d.contact != null ? d.contact.fullName : (d.company != null ? d.company.name : '')}"></span></td>
+                    <td class="px-5 py-3 font-medium text-slate-700">৳ <span th:text="${#numbers.formatInteger(d.value, 1, 'COMMA')}">0</span></td>
+                    <td class="px-5 py-3"><span th:replace="~{layout/components :: badge(${d.stage.label}, ${d.stage.color})}"></span></td>
+                    <td class="px-5 py-3">
+                        <div class="flex items-center gap-2"><div class="w-16 h-1.5 rounded-full bg-slate-200 overflow-hidden"><div class="h-full bg-brand" th:style="'width:' + ${d.probability} + '%'"></div></div>
+                            <span class="text-xs text-slate-500" th:text="${d.probability} + '%'">0%</span></div>
+                    </td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${d.expectedCloseDate != null ? #temporals.format(d.expectedCloseDate, 'dd MMM yyyy') : '—'}">date</td>
+                    <td class="px-5 py-3 text-right whitespace-nowrap" sec:authorize="hasAuthority('CRM_EDIT')">
+                        <a th:href="@{/crm/deals/{id}/edit(id=${d.id})}" class="text-slate-400 hover:text-brand px-1.5">✎</a>
+                        <form th:action="@{/crm/deals/{id}/delete(id=${d.id})}" method="post" class="inline" data-confirm="Delete this deal?">
+                            <button class="text-slate-400 hover:text-danger px-1.5">🗑</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div th:replace="~{layout/components :: pagination(${deals}, '/crm/deals', ${q})}"></div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Contacts</title></head>
+<body>
+<div layout:fragment="content">
+    <div th:replace="~{layout/components :: breadcrumb('CRM', '', 'Contacts')}"></div>
+    <div class="flex items-center justify-between gap-4 mb-6">
+        <div><h1 class="text-2xl font-bold text-slate-800">Contacts</h1>
+            <p class="text-slate-500 text-sm mt-1">People in your network.</p></div>
+        <a sec:authorize="hasAuthority('CRM_EDIT')" th:href="@{/crm/contacts/new}" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand hover:bg-brand-dark text-white">+ New Contact</a>
+    </div>
+    <div th:replace="~{layout/components :: listToolbar('/crm/contacts', ${q})}"></div>
+
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div th:if="${contacts.isEmpty()}" th:replace="~{layout/components :: emptyState('No contacts yet', 'Add your first contact.', '/crm/contacts/new', '+ New Contact')}"></div>
+        <table th:unless="${contacts.isEmpty()}" class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-500 text-left">
+                <tr><th class="px-5 py-3 font-medium">Name</th><th class="px-5 py-3 font-medium">Job title</th><th class="px-5 py-3 font-medium">Company</th><th class="px-5 py-3 font-medium">Email</th><th class="px-5 py-3 font-medium">Phone</th><th class="px-5 py-3 font-medium text-right">Actions</th></tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                <tr th:each="c : ${contacts.content}" class="hover:bg-slate-50">
+                    <td class="px-5 py-3">
+                        <a th:href="@{/crm/contacts/{id}(id=${c.id})}" class="flex items-center gap-3 group">
+                            <span class="w-8 h-8 rounded-full bg-brand/15 text-brand flex items-center justify-center text-xs font-semibold" th:text="${c.initials}">AB</span>
+                            <span class="font-medium text-slate-700 group-hover:text-brand" th:text="${c.fullName}">Name</span>
+                        </a>
+                    </td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${c.jobTitle} ?: '—'">Title</td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${c.company != null ? c.company.name : '—'}">Company</td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${c.email} ?: '—'">Email</td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${c.phone} ?: '—'">Phone</td>
+                    <td class="px-5 py-3 text-right whitespace-nowrap" sec:authorize="hasAuthority('CRM_EDIT')">
+                        <a th:href="@{/crm/contacts/{id}/edit(id=${c.id})}" class="text-slate-400 hover:text-brand px-1.5">✎</a>
+                        <form th:action="@{/crm/contacts/{id}/delete(id=${c.id})}" method="post" class="inline" data-confirm="Delete this contact?">
+                            <button class="text-slate-400 hover:text-danger px-1.5">🗑</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div th:replace="~{layout/components :: pagination(${contacts}, '/crm/contacts', ${q})}"></div>
+    </div>
+</div>
+</body>
+</html>

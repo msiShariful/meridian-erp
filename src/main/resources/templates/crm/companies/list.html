@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Companies</title></head>
+<body>
+<div layout:fragment="content">
+    <div th:replace="~{layout/components :: breadcrumb('CRM', '', 'Companies')}"></div>
+    <div class="flex items-center justify-between gap-4 mb-6">
+        <div><h1 class="text-2xl font-bold text-slate-800">Companies</h1>
+            <p class="text-slate-500 text-sm mt-1">Organizations you do business with.</p></div>
+        <a sec:authorize="hasAuthority('CRM_EDIT')" th:href="@{/crm/companies/new}" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand hover:bg-brand-dark text-white">+ New Company</a>
+    </div>
+    <div th:replace="~{layout/components :: listToolbar('/crm/companies', ${q})}"></div>
+
+    <div th:if="${companies.isEmpty()}" class="bg-white rounded-xl border border-slate-200 shadow-sm">
+        <div th:replace="~{layout/components :: emptyState('No companies yet', 'Add a company to organise your contacts and deals.', '/crm/companies/new', '+ New Company')}"></div>
+    </div>
+
+    <div th:unless="${companies.isEmpty()}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div th:each="c : ${companies.content}" class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 hover:shadow-md transition-shadow">
+            <div class="flex items-start gap-3">
+                <span class="w-12 h-12 rounded-lg bg-brand/15 text-brand flex items-center justify-center font-bold overflow-hidden">
+                    <img th:if="${c.logo}" th:src="@{${c.logo}}" class="w-full h-full object-cover" alt="">
+                    <span th:unless="${c.logo}" th:text="${c.initials}">AB</span>
+                </span>
+                <div class="min-w-0 flex-1">
+                    <a th:href="@{/crm/companies/{id}(id=${c.id})}" class="font-semibold text-slate-800 hover:text-brand truncate block" th:text="${c.name}">Name</a>
+                    <p class="text-xs text-slate-400" th:text="${c.industry} ?: 'No industry'">Industry</p>
+                </div>
+            </div>
+            <div class="mt-4 space-y-1 text-sm text-slate-500">
+                <p th:if="${c.email}" th:text="${c.email}">email</p>
+                <p th:if="${c.phone}" th:text="${c.phone}">phone</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 flex justify-end gap-1" sec:authorize="hasAuthority('CRM_EDIT')">
+                <a th:href="@{/crm/companies/{id}/edit(id=${c.id})}" class="text-slate-400 hover:text-brand px-2">✎</a>
+                <form th:action="@{/crm/companies/{id}/delete(id=${c.id})}" method="post" class="inline" data-confirm="Delete this company?">
+                    <button class="text-slate-400 hover:text-danger px-2">🗑</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

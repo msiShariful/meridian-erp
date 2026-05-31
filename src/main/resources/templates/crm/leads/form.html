@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title th:text="${pageTitle}">Lead</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('Leads', '/crm/leads', ${pageTitle})}"></div>
+    <h1 class="text-2xl font-bold text-slate-800 mb-6" th:text="${pageTitle}">New Lead</h1>
+
+    <form th:action="@{/crm/leads/save}" th:object="${lead}" method="post" class="max-w-3xl">
+        <input type="hidden" th:field="*{id}">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
+
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Full name <span class="text-danger">*</span></label>
+                <input th:field="*{name}" required class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand focus:ring-1 focus:ring-brand outline-none">
+                <p th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="text-xs text-danger mt-1"></p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Company</label>
+                <input th:field="*{companyName}" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand focus:ring-1 focus:ring-brand outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
+                <input type="email" th:field="*{email}" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand focus:ring-1 focus:ring-brand outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Phone</label>
+                <input th:field="*{phone}" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand focus:ring-1 focus:ring-brand outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Source</label>
+                <select th:field="*{source}" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand outline-none">
+                    <option th:each="s : ${sources}" th:value="${s}" th:text="${s.label}"></option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Status</label>
+                <select th:field="*{status}" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand outline-none">
+                    <option th:each="s : ${statuses}" th:value="${s}" th:text="${s.label}"></option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Score</label>
+                <select th:field="*{score}" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand outline-none">
+                    <option th:each="n : ${scores}" th:value="${n}" th:text="${n} + ' ★'"></option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Estimated value (৳)</label>
+                <input type="number" step="0.01" min="0" th:field="*{estimatedValue}" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand focus:ring-1 focus:ring-brand outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Assigned to</label>
+                <input th:field="*{assignedTo}" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand focus:ring-1 focus:ring-brand outline-none">
+            </div>
+            <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Notes</label>
+                <textarea th:field="*{notes}" rows="3" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand focus:ring-1 focus:ring-brand outline-none"></textarea>
+            </div>
+        </div>
+
+        <div class="flex gap-2 mt-5">
+            <button type="submit" class="bg-brand hover:bg-brand-dark text-white font-semibold px-5 py-2.5 rounded-lg">Save Lead</button>
+            <a th:href="@{/crm/leads}" class="px-5 py-2.5 rounded-lg bg-white border border-slate-300 text-slate-700 font-medium hover:bg-slate-50">Cancel</a>
+        </div>
+    </form>
+</div>
+</body>
+</html>

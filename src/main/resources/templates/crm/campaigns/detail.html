@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title th:text="${campaign.name}">Campaign</title></head>
+<body>
+<div layout:fragment="content">
+    <div th:replace="~{layout/components :: breadcrumb('Campaigns', '/crm/campaigns', ${campaign.name})}"></div>
+    <div class="flex items-center justify-between gap-4 mb-6">
+        <div><h1 class="text-2xl font-bold text-slate-800" th:text="${campaign.name}">Name</h1>
+            <p class="text-slate-500 text-sm" th:text="${campaign.type.label} + ' campaign'">Type</p></div>
+        <div class="flex items-center gap-3">
+            <span th:replace="~{layout/components :: badge(${campaign.status.label}, ${campaign.status.color})}"></span>
+            <a sec:authorize="hasAuthority('CRM_EDIT')" th:href="@{/crm/campaigns/{id}/edit(id=${campaign.id})}" class="px-4 py-2 text-sm font-medium rounded-lg bg-white border border-slate-300 hover:bg-slate-50">Edit</a>
+        </div>
+    </div>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5"><p class="text-sm text-slate-500">Budget</p><p class="text-xl font-bold text-slate-800 mt-1">৳ <span th:text="${#numbers.formatInteger(campaign.budget, 1, 'COMMA')}">0</span></p></div>
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5"><p class="text-sm text-slate-500">Revenue</p><p class="text-xl font-bold text-emerald-600 mt-1">৳ <span th:text="${#numbers.formatInteger(campaign.revenue, 1, 'COMMA')}">0</span></p></div>
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5"><p class="text-sm text-slate-500">ROI</p><p class="text-xl font-bold mt-1" th:classappend="${campaign.roi.signum() >= 0} ? 'text-emerald-600' : 'text-red-500'" th:text="${campaign.roi} + '%'">0%</p></div>
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5"><p class="text-sm text-slate-500">Leads</p><p class="text-xl font-bold text-brand mt-1" th:text="${campaign.leadsGenerated}">0</p></div>
+    </div>
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 max-w-2xl">
+        <h2 class="font-semibold text-slate-800 mb-4">Details</h2>
+        <dl class="grid grid-cols-2 gap-y-4 text-sm">
+            <div><dt class="text-slate-400">Start date</dt><dd class="text-slate-700" th:text="${campaign.startDate != null ? #temporals.format(campaign.startDate, 'dd MMM yyyy') : '—'}"></dd></div>
+            <div><dt class="text-slate-400">End date</dt><dd class="text-slate-700" th:text="${campaign.endDate != null ? #temporals.format(campaign.endDate, 'dd MMM yyyy') : '—'}"></dd></div>
+            <div class="col-span-2"><dt class="text-slate-400">Description</dt><dd class="text-slate-700 whitespace-pre-line" th:text="${campaign.description} ?: '—'"></dd></div>
+        </dl>
+    </div>
+</div>
+</body>
+</html>

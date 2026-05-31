@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Campaigns</title></head>
+<body>
+<div layout:fragment="content">
+    <div th:replace="~{layout/components :: breadcrumb('CRM', '', 'Campaigns')}"></div>
+    <div class="flex items-center justify-between gap-4 mb-6">
+        <div><h1 class="text-2xl font-bold text-slate-800">Campaigns</h1>
+            <p class="text-slate-500 text-sm mt-1">Marketing campaigns and their performance.</p></div>
+        <a sec:authorize="hasAuthority('CRM_EDIT')" th:href="@{/crm/campaigns/new}" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand hover:bg-brand-dark text-white">+ New Campaign</a>
+    </div>
+    <div th:replace="~{layout/components :: listToolbar('/crm/campaigns', ${q})}"></div>
+
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div th:if="${campaigns.isEmpty()}" th:replace="~{layout/components :: emptyState('No campaigns', 'Create your first campaign.', '/crm/campaigns/new', '+ New Campaign')}"></div>
+        <table th:unless="${campaigns.isEmpty()}" class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-500 text-left">
+                <tr><th class="px-5 py-3 font-medium">Campaign</th><th class="px-5 py-3 font-medium">Type</th><th class="px-5 py-3 font-medium">Budget</th><th class="px-5 py-3 font-medium">Revenue</th><th class="px-5 py-3 font-medium">ROI</th><th class="px-5 py-3 font-medium">Status</th><th class="px-5 py-3 font-medium text-right">Actions</th></tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                <tr th:each="c : ${campaigns.content}" class="hover:bg-slate-50">
+                    <td class="px-5 py-3"><a th:href="@{/crm/campaigns/{id}(id=${c.id})}" class="font-medium text-slate-700 hover:text-brand" th:text="${c.name}">Name</a></td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${c.type.label}">Type</td>
+                    <td class="px-5 py-3 text-slate-600">৳ <span th:text="${#numbers.formatInteger(c.budget, 1, 'COMMA')}">0</span></td>
+                    <td class="px-5 py-3 text-slate-600">৳ <span th:text="${#numbers.formatInteger(c.revenue, 1, 'COMMA')}">0</span></td>
+                    <td class="px-5 py-3"><span th:classappend="${c.roi.signum() >= 0} ? 'text-emerald-600' : 'text-red-500'" class="font-medium" th:text="${c.roi} + '%'">0%</span></td>
+                    <td class="px-5 py-3"><span th:replace="~{layout/components :: badge(${c.status.label}, ${c.status.color})}"></span></td>
+                    <td class="px-5 py-3 text-right whitespace-nowrap" sec:authorize="hasAuthority('CRM_EDIT')">
+                        <a th:href="@{/crm/campaigns/{id}/edit(id=${c.id})}" class="text-slate-400 hover:text-brand px-1.5">✎</a>
+                        <form th:action="@{/crm/campaigns/{id}/delete(id=${c.id})}" method="post" class="inline" data-confirm="Delete this campaign?"><button class="text-slate-400 hover:text-danger px-1.5">🗑</button></form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div th:replace="~{layout/components :: pagination(${campaigns}, '/crm/campaigns', ${q})}"></div>
+    </div>
+</div>
+</body>
+</html>

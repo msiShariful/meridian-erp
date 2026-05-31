@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <title>Lead Pipeline</title>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('Leads', '/crm/leads', 'Pipeline')}"></div>
+
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Lead Pipeline</h1>
+            <p class="text-slate-500 text-sm mt-1">Drag leads across stages to update their status.</p>
+        </div>
+        <a th:href="@{/crm/leads}" class="px-4 py-2 text-sm font-medium rounded-lg bg-white border border-slate-300 hover:bg-slate-50">List view</a>
+    </div>
+
+    <div class="flex gap-4 overflow-x-auto pb-4">
+        <div th:each="col : ${board}" class="flex-shrink-0 w-72"
+             th:attr="data-status=${col.key}"
+             ondragover="event.preventDefault(); this.classList.add('ring-2','ring-brand/40')"
+             ondragleave="this.classList.remove('ring-2','ring-brand/40')"
+             ondrop="dropLead(event, this)">
+            <div class="flex items-center justify-between mb-3 px-1">
+                <h3 class="font-semibold text-slate-700 text-sm" th:text="${col.key.label}">Stage</h3>
+                <span class="text-xs bg-slate-200 text-slate-600 rounded-full px-2 py-0.5" th:text="${col.value.size()}">0</span>
+            </div>
+            <div class="space-y-3 min-h-[120px] rounded-xl bg-slate-50 p-2">
+                <div th:each="lead : ${col.value}"
+                     class="bg-white rounded-lg border border-slate-200 p-3 shadow-sm cursor-move hover:shadow-md"
+                     draggable="true" th:attr="data-id=${lead.id}"
+                     ondragstart="event.dataTransfer.setData('text/plain', this.getAttribute('data-id'))">
+                    <a th:href="@{/crm/leads/{id}(id=${lead.id})}" class="font-medium text-slate-700 text-sm hover:text-brand" th:text="${lead.name}">Name</a>
+                    <p class="text-xs text-slate-400 mt-0.5" th:text="${lead.companyName} ?: '—'">Company</p>
+                    <div class="flex items-center justify-between mt-2">
+                        <span class="text-xs font-medium text-emerald-600">৳ <span th:text="${#numbers.formatInteger(lead.estimatedValue, 1, 'COMMA')}">0</span></span>
+                        <span class="text-amber-400 text-xs" th:text="${lead.score} + '★'">3★</span>
+                    </div>
+                </div>
+                <p th:if="${col.value.isEmpty()}" class="text-center text-xs text-slate-300 py-6">Drop leads here</p>
+            </div>
+        </div>
+    </div>
+
+    <script layout:fragment="scripts">
+        const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+        function dropLead(ev, col) {
+            ev.preventDefault();
+            col.classList.remove('ring-2', 'ring-brand/40');
+            const leadId = ev.dataTransfer.getData('text/plain');
+            const status = col.getAttribute('data-status');
+            const card = document.querySelector(`[data-id="${leadId}"]`);
+            if (card) col.querySelector('.space-y-3').prepend(card);
+            fetch(`/crm/leads/${leadId}/status?status=${status}`, {
+                method: 'POST',
+                headers: { [csrfHeader]: csrfToken }
+            }).then(r => { if (!r.ok) location.reload(); });
+        }
+    </script>
+</div>
+</body>
+</html>
