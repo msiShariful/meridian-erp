@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Knowledge Base</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('Support', '', 'Knowledge Base')}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Knowledge Base</h1>
+            <p class="text-slate-500 text-sm mt-1">Self-service help articles for your customers.</p>
+        </div>
+        <div class="flex gap-2">
+            <a sec:authorize="hasAuthority('SUPPORT_EDIT')" th:href="@{/support/knowledge-base/new}" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand hover:bg-brand-dark text-white">+ New Article</a>
+        </div>
+    </div>
+
+    <div th:replace="~{layout/components :: listToolbar('/support/knowledge-base', ${q})}"></div>
+
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div th:if="${articles.isEmpty()}" th:replace="~{layout/components :: emptyState('No articles found', 'Write your first help article to get started.', '/support/knowledge-base/new', '+ New Article')}"></div>
+
+        <table th:unless="${articles.isEmpty()}" class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-500 text-left">
+                <tr>
+                    <th class="px-5 py-3 font-medium">Title</th>
+                    <th class="px-5 py-3 font-medium">Category</th>
+                    <th class="px-5 py-3 font-medium">Published</th>
+                    <th class="px-5 py-3 font-medium">Helpful</th>
+                    <th class="px-5 py-3 font-medium text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                <tr th:each="article : ${articles.content}" class="hover:bg-slate-50">
+                    <td class="px-5 py-3">
+                        <a th:href="@{/support/knowledge-base/{id}(id=${article.id})}" class="font-medium text-slate-700 hover:text-brand" th:text="${article.title}">Title</a>
+                    </td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${article.category} ?: '—'">Category</td>
+                    <td class="px-5 py-3">
+                        <span th:if="${article.published}" th:replace="~{layout/components :: badge('Published', 'success')}"></span>
+                        <span th:unless="${article.published}" th:replace="~{layout/components :: badge('Draft', 'default')}"></span>
+                    </td>
+                    <td class="px-5 py-3 text-slate-600">
+                        <span class="text-emerald-600 font-medium" th:text="'+' + ${article.helpfulYes}">+0</span>
+                        /
+                        <span class="text-red-500 font-medium" th:text="'-' + ${article.helpfulNo}">-0</span>
+                    </td>
+                    <td class="px-5 py-3 text-right whitespace-nowrap">
+                        <a sec:authorize="hasAuthority('SUPPORT_EDIT')" th:href="@{/support/knowledge-base/{id}/edit(id=${article.id})}" class="text-slate-400 hover:text-brand px-1.5" title="Edit">✎</a>
+                        <form sec:authorize="hasAuthority('SUPPORT_EDIT')" th:action="@{/support/knowledge-base/{id}/delete(id=${article.id})}" method="post" class="inline" data-confirm="Delete this article?">
+                            <button class="text-slate-400 hover:text-danger px-1.5" title="Delete">🗑</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div th:replace="~{layout/components :: pagination(${articles}, '/support/knowledge-base', ${q})}"></div>
+    </div>
+</div>
+</body>
+</html>

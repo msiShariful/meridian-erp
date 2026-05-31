@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title th:text="${article.title}">Article</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('Knowledge Base', '/support/knowledge-base', ${article.title})}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <div class="flex items-center gap-3 flex-wrap">
+                <span th:if="${article.category}" th:replace="~{layout/components :: badge(${article.category}, 'brand')}"></span>
+                <span th:if="${article.published}" th:replace="~{layout/components :: badge('Published', 'success')}"></span>
+                <span th:unless="${article.published}" th:replace="~{layout/components :: badge('Draft', 'default')}"></span>
+            </div>
+            <h1 class="text-2xl font-bold text-slate-800 mt-2" th:text="${article.title}">Title</h1>
+        </div>
+        <div class="flex gap-2" sec:authorize="hasAuthority('SUPPORT_EDIT')">
+            <a th:href="@{/support/knowledge-base/{id}/edit(id=${article.id})}" class="px-4 py-2 text-sm font-medium rounded-lg bg-white border border-slate-300 hover:bg-slate-50">Edit</a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                <article class="prose prose-sm max-w-none text-slate-600 whitespace-pre-line" th:text="${article.body}">Article body</article>
+                <div th:if="${article.tags}" class="mt-6 pt-4 border-t border-slate-100 flex flex-wrap gap-2">
+                    <span th:each="tag : ${#strings.arraySplit(article.tags, ',')}"
+                          th:if="${!#strings.isEmpty(#strings.trim(tag))}"
+                          class="inline-block px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600"
+                          th:text="'#' + ${#strings.trim(tag)}">#tag</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-6">
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                <h2 class="font-semibold text-slate-800 mb-1">Was this helpful?</h2>
+                <p class="text-sm text-slate-500 mb-4">
+                    <span class="text-emerald-600 font-medium" th:text="${article.helpfulYes}">0</span> found this helpful,
+                    <span class="text-red-500 font-medium" th:text="${article.helpfulNo}">0</span> did not.
+                </p>
+                <div class="flex gap-2">
+                    <form th:action="@{/support/knowledge-base/{id}/vote(id=${article.id})}" method="post" class="flex-1">
+                        <input type="hidden" name="helpful" value="true">
+                        <button type="submit" class="w-full px-4 py-2 text-sm font-medium rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100">👍 Yes</button>
+                    </form>
+                    <form th:action="@{/support/knowledge-base/{id}/vote(id=${article.id})}" method="post" class="flex-1">
+                        <input type="hidden" name="helpful" value="false">
+                        <button type="submit" class="w-full px-4 py-2 text-sm font-medium rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100">👎 No</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

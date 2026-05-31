@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title th:text="${ticket.subject}">Ticket</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('Tickets', '/support/tickets', ${ticket.ticketNumber})}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <div class="flex items-center gap-3 flex-wrap">
+                <span class="font-mono text-sm text-slate-400" th:text="${ticket.ticketNumber}">TKT-0001</span>
+                <span th:replace="~{layout/components :: badge(${ticket.status.label}, ${ticket.status.color})}"></span>
+                <span th:replace="~{layout/components :: badge(${ticket.priority.label}, ${ticket.priority.color})}"></span>
+                <span th:if="${ticket.slaBreached()}" th:replace="~{layout/components :: badge('SLA Breach', 'danger')}"></span>
+            </div>
+            <h1 class="text-2xl font-bold text-slate-800 mt-2" th:text="${ticket.subject}">Subject</h1>
+        </div>
+        <div class="flex gap-2" sec:authorize="hasAuthority('SUPPORT_EDIT')">
+            <a th:href="@{/support/tickets/{id}/edit(id=${ticket.id})}" class="px-4 py-2 text-sm font-medium rounded-lg bg-white border border-slate-300 hover:bg-slate-50">Edit</a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Conversation thread -->
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                <h2 class="font-semibold text-slate-800 mb-4">Conversation</h2>
+
+                <div th:if="${ticket.description}" class="mb-5 pb-5 border-b border-slate-100">
+                    <p class="text-xs text-slate-400 mb-1">Original request</p>
+                    <p class="text-sm text-slate-600 whitespace-pre-line" th:text="${ticket.description}"></p>
+                </div>
+
+                <p th:if="${ticket.messages.isEmpty()}" class="text-sm text-slate-400">No messages yet.</p>
+
+                <ul class="space-y-4">
+                    <li th:each="m : ${ticket.messages}"
+                        th:classappend="${m.internalNote} ? 'bg-amber-50 border-amber-200' : 'bg-slate-50 border-slate-200'"
+                        class="rounded-lg border p-4">
+                        <div class="flex items-center justify-between gap-3 mb-1.5">
+                            <div class="flex items-center gap-2">
+                                <span class="w-7 h-7 rounded-full bg-brand/15 text-brand flex items-center justify-center text-xs font-semibold"
+                                      th:text="${#strings.isEmpty(m.author)} ? '?' : ${#strings.toUpperCase(#strings.substring(m.author,0,1))}">A</span>
+                                <span class="text-sm font-medium text-slate-700" th:text="${m.author} ?: 'Unknown'">Author</span>
+                                <span th:if="${m.internalNote}" th:replace="~{layout/components :: badge('Internal Note', 'warning')}"></span>
+                            </div>
+                            <span class="text-xs text-slate-400" th:text="${m.sentAt != null} ? ${#temporals.format(m.sentAt, 'dd MMM yyyy HH:mm')} : ''">date</span>
+                        </div>
+                        <p class="text-sm text-slate-600 whitespace-pre-line" th:text="${m.body}">body</p>
+                    </li>
+                </ul>
+
+                <!-- Add reply -->
+                <form sec:authorize="hasAuthority('SUPPORT_EDIT')" th:action="@{/support/tickets/{id}/reply(id=${ticket.id})}"
+                      th:object="${newMessage}" method="post" class="mt-6 pt-6 border-t border-slate-100 space-y-3">
+                    <h3 class="font-semibold text-slate-800 text-sm">Add Reply</h3>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Author</label>
+                        <input th:field="*{author}" required class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:border-brand focus:ring-1 focus:ring-brand outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Message</label>
+                        <textarea th:field="*{body}" rows="3" required class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:border-brand focus:ring-1 focus:ring-brand outline-none"></textarea>
+                    </div>
+                    <label class="flex items-center gap-2 text-sm text-slate-600">
+                        <input type="checkbox" th:field="*{internalNote}" class="rounded border-slate-300 text-brand focus:ring-brand">
+                        Internal note (not visible to customer)
+                    </label>
+                    <button type="submit" class="bg-brand hover:bg-brand-dark text-white font-semibold px-5 py-2 rounded-lg text-sm">Send Reply</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Sidebar: details + status control -->
+        <div class="space-y-6">
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                <h2 class="font-semibold text-slate-800 mb-4">Details</h2>
+                <dl class="space-y-3 text-sm">
+                    <div><dt class="text-slate-400">Customer</dt><dd class="text-slate-700" th:text="${ticket.customerName} ?: '—'"></dd></div>
+                    <div><dt class="text-slate-400">Email</dt><dd class="text-slate-700" th:text="${ticket.customerEmail} ?: '—'"></dd></div>
+                    <div><dt class="text-slate-400">Category</dt><dd class="text-slate-700" th:text="${ticket.category != null ? ticket.category.name : '—'}"></dd></div>
+                    <div><dt class="text-slate-400">Assigned to</dt><dd class="text-slate-700" th:text="${ticket.assignedTo} ?: '—'"></dd></div>
+                    <div><dt class="text-slate-400">Priority</dt><dd><span th:replace="~{layout/components :: badge(${ticket.priority.label}, ${ticket.priority.color})}"></span></dd></div>
+                    <div><dt class="text-slate-400">SLA resolution</dt><dd class="text-slate-700"><span th:text="${ticket.slaResolutionHours}">48</span> hours</dd></div>
+                    <div><dt class="text-slate-400">Created</dt><dd class="text-slate-700" th:text="${ticket.createdAt != null} ? ${#temporals.format(ticket.createdAt, 'dd MMM yyyy HH:mm')} : '—'"></dd></div>
+                    <div><dt class="text-slate-400">First response</dt><dd class="text-slate-700" th:text="${ticket.firstResponseAt != null} ? ${#temporals.format(ticket.firstResponseAt, 'dd MMM yyyy HH:mm')} : 'Pending'"></dd></div>
+                    <div><dt class="text-slate-400">Resolved</dt><dd class="text-slate-700" th:text="${ticket.resolvedAt != null} ? ${#temporals.format(ticket.resolvedAt, 'dd MMM yyyy HH:mm')} : '—'"></dd></div>
+                </dl>
+            </div>
+
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6" sec:authorize="hasAuthority('SUPPORT_EDIT')">
+                <h2 class="font-semibold text-slate-800 mb-4">Change Status</h2>
+                <form th:action="@{/support/tickets/{id}/status(id=${ticket.id})}" method="post" class="flex gap-2">
+                    <select name="status" class="flex-1 px-3 py-2 text-sm rounded-lg border border-slate-300 focus:border-brand outline-none">
+                        <option th:each="s : ${statuses}" th:value="${s}" th:text="${s.label}" th:selected="${s == ticket.status}"></option>
+                    </select>
+                    <button type="submit" class="bg-slate-800 text-white text-sm font-medium px-4 py-2 rounded-lg">Update</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

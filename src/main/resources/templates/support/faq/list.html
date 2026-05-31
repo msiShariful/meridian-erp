@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>FAQ</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('Support', '', 'FAQ')}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Frequently Asked Questions</h1>
+            <p class="text-slate-500 text-sm mt-1">Quick answers to common customer questions.</p>
+        </div>
+        <div class="flex gap-2">
+            <a sec:authorize="hasAuthority('SUPPORT_EDIT')" th:href="@{/support/faq/new}" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand hover:bg-brand-dark text-white">+ New FAQ</a>
+        </div>
+    </div>
+
+    <div th:if="${groups.isEmpty()}" class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div th:replace="~{layout/components :: emptyState('No FAQs yet', 'Add your first frequently asked question.', '/support/faq/new', '+ New FAQ')}"></div>
+    </div>
+
+    <div th:unless="${groups.isEmpty()}" class="space-y-6">
+        <div th:each="group : ${groups}" class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="px-5 py-3 bg-slate-50 border-b border-slate-100">
+                <h2 class="font-semibold text-slate-700" th:text="${group.key}">Category</h2>
+            </div>
+            <div class="divide-y divide-slate-100" x-data>
+                <div th:each="faq : ${group.value}" x-data="{ open: false }" class="px-5 py-4">
+                    <div class="flex items-start justify-between gap-3">
+                        <button @click="open = !open" class="flex-1 text-left">
+                            <span class="font-medium text-slate-700" th:text="${faq.question}">Question?</span>
+                        </button>
+                        <div class="flex items-center gap-2 shrink-0" sec:authorize="hasAuthority('SUPPORT_EDIT')">
+                            <a th:href="@{/support/faq/{id}/edit(id=${faq.id})}" class="text-slate-400 hover:text-brand px-1" title="Edit">✎</a>
+                            <form th:action="@{/support/faq/{id}/delete(id=${faq.id})}" method="post" class="inline" data-confirm="Delete this FAQ?">
+                                <button class="text-slate-400 hover:text-danger px-1" title="Delete">🗑</button>
+                            </form>
+                        </div>
+                    </div>
+                    <p x-show="open" x-cloak class="text-sm text-slate-600 mt-2 whitespace-pre-line" th:text="${faq.answer}">Answer</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

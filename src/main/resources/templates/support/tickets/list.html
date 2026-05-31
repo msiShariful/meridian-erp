@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Tickets</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('Support', '', 'Tickets')}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Tickets</h1>
+            <p class="text-slate-500 text-sm mt-1">Track customer issues and SLA compliance.</p>
+        </div>
+        <div class="flex gap-2">
+            <a sec:authorize="hasAuthority('SUPPORT_EDIT')" th:href="@{/support/tickets/new}" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand hover:bg-brand-dark text-white">+ New Ticket</a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <form th:action="@{/support/tickets}" method="get" class="flex flex-col sm:flex-row gap-3 mb-4">
+        <div class="relative flex-1 max-w-sm">
+            <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"/></svg>
+            <input type="search" name="q" th:value="${q}" placeholder="Search tickets…"
+                   class="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-300 focus:border-brand focus:ring-1 focus:ring-brand outline-none">
+        </div>
+        <select name="status" onchange="this.form.submit()"
+                class="px-3 py-2 text-sm rounded-lg border border-slate-300 focus:border-brand outline-none">
+            <option value="">All statuses</option>
+            <option th:each="s : ${statuses}" th:value="${s}" th:text="${s.label}" th:selected="${s == statusFilter}"></option>
+        </select>
+        <button class="px-4 py-2 text-sm rounded-lg bg-slate-800 text-white">Filter</button>
+    </form>
+
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div th:if="${tickets.isEmpty()}" th:replace="~{layout/components :: emptyState('No tickets found', 'Create your first ticket to start tracking customer issues.', '/support/tickets/new', '+ New Ticket')}"></div>
+
+        <table th:unless="${tickets.isEmpty()}" class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-500 text-left">
+                <tr>
+                    <th class="px-5 py-3 font-medium">Ticket</th>
+                    <th class="px-5 py-3 font-medium">Subject</th>
+                    <th class="px-5 py-3 font-medium">Customer</th>
+                    <th class="px-5 py-3 font-medium">Category</th>
+                    <th class="px-5 py-3 font-medium">Priority</th>
+                    <th class="px-5 py-3 font-medium">Status</th>
+                    <th class="px-5 py-3 font-medium text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                <tr th:each="ticket : ${tickets.content}" class="hover:bg-slate-50">
+                    <td class="px-5 py-3 font-mono text-xs text-slate-500 whitespace-nowrap" th:text="${ticket.ticketNumber}">TKT-0001</td>
+                    <td class="px-5 py-3">
+                        <a th:href="@{/support/tickets/{id}(id=${ticket.id})}" class="font-medium text-slate-700 hover:text-brand" th:text="${ticket.subject}">Subject</a>
+                    </td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${ticket.customerName} ?: '—'">Customer</td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${ticket.category != null ? ticket.category.name : '—'}">Category</td>
+                    <td class="px-5 py-3">
+                        <span th:replace="~{layout/components :: badge(${ticket.priority.label}, ${ticket.priority.color})}"></span>
+                    </td>
+                    <td class="px-5 py-3 whitespace-nowrap">
+                        <span th:replace="~{layout/components :: badge(${ticket.status.label}, ${ticket.status.color})}"></span>
+                        <span th:if="${ticket.slaBreached()}" th:replace="~{layout/components :: badge('SLA Breach', 'danger')}"></span>
+                    </td>
+                    <td class="px-5 py-3 text-right whitespace-nowrap">
+                        <a sec:authorize="hasAuthority('SUPPORT_EDIT')" th:href="@{/support/tickets/{id}/edit(id=${ticket.id})}" class="text-slate-400 hover:text-brand px-1.5" title="Edit">✎</a>
+                        <form sec:authorize="hasAuthority('SUPPORT_EDIT')" th:action="@{/support/tickets/{id}/delete(id=${ticket.id})}" method="post" class="inline" data-confirm="Delete this ticket?">
+                            <button class="text-slate-400 hover:text-danger px-1.5" title="Delete">🗑</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div th:replace="~{layout/components :: pagination(${tickets}, '/support/tickets', ${q})}"></div>
+    </div>
+</div>
+</body>
+</html>
