@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Reviews</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('E-Commerce', '', 'Reviews')}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Product Reviews</h1>
+            <p class="text-slate-500 text-sm mt-1">Moderate customer reviews before they appear on the storefront.</p>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <form th:action="@{/ecommerce/reviews}" method="get" class="flex flex-col sm:flex-row gap-3 mb-4">
+        <div class="relative flex-1 max-w-sm">
+            <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"/></svg>
+            <input type="search" name="q" th:value="${q}" placeholder="Search reviews…"
+                   class="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-300 focus:border-brand focus:ring-1 focus:ring-brand outline-none">
+        </div>
+        <select name="status" onchange="this.form.submit()"
+                class="px-3 py-2 text-sm rounded-lg border border-slate-300 focus:border-brand outline-none">
+            <option value="">All statuses</option>
+            <option th:each="s : ${statuses}" th:value="${s}" th:text="${s.label}" th:selected="${s == statusFilter}"></option>
+        </select>
+        <button class="px-4 py-2 text-sm rounded-lg bg-slate-800 text-white">Filter</button>
+    </form>
+
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div th:if="${reviews.isEmpty()}" th:replace="~{layout/components :: emptyState('No reviews found', 'Customer reviews submitted in the storefront will appear here.', '', '')}"></div>
+
+        <table th:unless="${reviews.isEmpty()}" class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-500 text-left">
+                <tr>
+                    <th class="px-5 py-3 font-medium">Product</th>
+                    <th class="px-5 py-3 font-medium">Customer</th>
+                    <th class="px-5 py-3 font-medium">Rating</th>
+                    <th class="px-5 py-3 font-medium">Comment</th>
+                    <th class="px-5 py-3 font-medium">Status</th>
+                    <th class="px-5 py-3 font-medium text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                <tr th:each="review : ${reviews.content}" class="hover:bg-slate-50 align-top">
+                    <td class="px-5 py-3 font-medium text-slate-700" th:text="${review.productName}">Product</td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${review.customerName}">Customer</td>
+                    <td class="px-5 py-3 whitespace-nowrap">
+                        <span th:each="i : ${#numbers.sequence(1,5)}"
+                              th:classappend="${i <= review.rating} ? 'text-amber-400' : 'text-slate-200'">★</span>
+                    </td>
+                    <td class="px-5 py-3 text-slate-600 max-w-xs" th:text="${review.comment} ?: '—'">Comment</td>
+                    <td class="px-5 py-3">
+                        <span th:replace="~{layout/components :: badge(${review.status.label}, ${review.status.color})}"></span>
+                    </td>
+                    <td class="px-5 py-3 text-right whitespace-nowrap" sec:authorize="hasAuthority('ECOMMERCE_EDIT')">
+                        <form th:action="@{/ecommerce/reviews/{id}/approve(id=${review.id})}" method="post" class="inline">
+                            <button class="text-xs px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100">Approve</button>
+                        </form>
+                        <form th:action="@{/ecommerce/reviews/{id}/reject(id=${review.id})}" method="post" class="inline">
+                            <button class="text-xs px-2.5 py-1 rounded-lg bg-red-50 text-red-700 hover:bg-red-100">Reject</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div th:replace="~{layout/components :: pagination(${reviews}, '/ecommerce/reviews', ${q})}"></div>
+    </div>
+</div>
+</body>
+</html>

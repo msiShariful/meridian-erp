@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${product.name} + ' · Meridian Shop'">Product · Meridian</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: {
+            colors: { navy: '#0f172a', brand: '#6366f1', 'brand-dark': '#4f46e5' },
+            fontFamily: { sans: ['Inter','ui-sans-serif','system-ui'] } } } }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="font-sans bg-slate-100 text-slate-800">
+
+<div th:replace="~{shop/fragments :: nav(${cartCount})}"></div>
+
+<main class="max-w-5xl mx-auto px-4 py-10">
+    <a th:href="@{/shop}" class="text-sm text-slate-500 hover:text-brand">&larr; Back to shop</a>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
+        <div class="aspect-square bg-white rounded-2xl border border-slate-200 flex items-center justify-center overflow-hidden">
+            <img th:if="${product.image}" th:src="${product.image}" th:alt="${product.name}" class="w-full h-full object-cover">
+            <span th:unless="${product.image}" class="text-6xl font-extrabold text-slate-300" th:text="${product.initials}">AB</span>
+        </div>
+
+        <div>
+            <h1 class="text-3xl font-extrabold text-navy" th:text="${product.name}">Product</h1>
+            <p class="text-2xl font-bold text-brand mt-3">৳ <span th:text="${#numbers.formatInteger(product.sellingPrice, 1, 'COMMA')}">0</span></p>
+            <p class="mt-2 text-sm"
+               th:classappend="${product.stockQuantity == 0} ? 'text-red-600' : 'text-emerald-600'"
+               th:text="${product.stockQuantity == 0} ? 'Out of stock' : 'In stock'">In stock</p>
+
+            <p class="mt-5 text-slate-600 leading-relaxed" th:text="${product.description} ?: 'No description available.'">Description</p>
+
+            <form th:action="@{/shop/cart/add}" method="post" class="mt-8 flex items-center gap-3">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <input type="hidden" name="productId" th:value="${product.id}">
+                <input type="number" name="qty" value="1" min="1"
+                       class="w-20 px-3 py-2.5 rounded-lg border border-slate-300 focus:border-brand focus:ring-1 focus:ring-brand outline-none">
+                <button type="submit" th:disabled="${product.stockQuantity == 0}"
+                        th:classappend="${product.stockQuantity == 0} ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-brand hover:bg-brand-dark text-white'"
+                        class="flex-1 py-2.5 rounded-lg font-semibold">
+                    Add to cart
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Reviews -->
+    <section class="mt-12">
+        <h2 class="text-xl font-bold text-navy mb-4">Customer Reviews</h2>
+        <p th:if="${reviews.isEmpty()}" class="text-slate-500 text-sm">No reviews yet for this product.</p>
+        <div class="space-y-4">
+            <div th:each="review : ${reviews}" class="bg-white rounded-xl border border-slate-200 p-5">
+                <div class="flex items-center justify-between">
+                    <p class="font-semibold text-slate-800" th:text="${review.customerName}">Customer</p>
+                    <span class="whitespace-nowrap">
+                        <span th:each="i : ${#numbers.sequence(1,5)}"
+                              th:classappend="${i <= review.rating} ? 'text-amber-400' : 'text-slate-200'">★</span>
+                    </span>
+                </div>
+                <p class="mt-2 text-sm text-slate-600" th:text="${review.comment}">Comment</p>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="max-w-6xl mx-auto px-4 py-8 text-center text-xs text-slate-400">
+    Meridian Shop &copy; 2026 · Powered by Meridian ERP
+</footer>
+</body>
+</html>

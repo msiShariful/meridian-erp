@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart · Meridian Shop</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: {
+            colors: { navy: '#0f172a', brand: '#6366f1', 'brand-dark': '#4f46e5' },
+            fontFamily: { sans: ['Inter','ui-sans-serif','system-ui'] } } } }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="font-sans bg-slate-100 text-slate-800">
+
+<div th:replace="~{shop/fragments :: nav(${cartCount})}"></div>
+
+<main class="max-w-5xl mx-auto px-4 py-10">
+    <h1 class="text-3xl font-extrabold text-navy mb-6">Your Cart</h1>
+
+    <div th:if="${couponMessage}" class="mb-4 bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm px-4 py-3 rounded-lg" th:text="${couponMessage}"></div>
+    <div th:if="${couponError}" class="mb-4 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg" th:text="${couponError}"></div>
+
+    <div th:if="${lines.isEmpty()}" class="text-center py-20 bg-white rounded-2xl border border-slate-200">
+        <p class="text-slate-500">Your cart is empty.</p>
+        <a th:href="@{/shop}" class="inline-block mt-4 px-5 py-2.5 rounded-lg bg-brand hover:bg-brand-dark text-white text-sm font-medium">Continue shopping</a>
+    </div>
+
+    <div th:unless="${lines.isEmpty()}" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Items -->
+        <div class="lg:col-span-2 space-y-4">
+            <div th:each="line : ${lines}" class="bg-white rounded-2xl border border-slate-200 p-4 flex items-center gap-4">
+                <div class="w-16 h-16 rounded-lg bg-slate-100 flex items-center justify-center overflow-hidden shrink-0">
+                    <img th:if="${line.image}" th:src="${line.image}" th:alt="${line.productName}" class="w-full h-full object-cover">
+                    <span th:unless="${line.image}" class="text-slate-300 font-bold">·</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-slate-800 truncate" th:text="${line.productName}">Product</p>
+                    <p class="text-sm text-slate-500">৳ <span th:text="${#numbers.formatInteger(line.unitPrice, 1, 'COMMA')}">0</span> each</p>
+                </div>
+                <form th:action="@{/shop/cart/update}" method="post" class="flex items-center gap-2">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <input type="hidden" name="productId" th:value="${line.productId}">
+                    <input type="number" name="qty" th:value="${line.quantity}" min="1"
+                           class="w-16 px-2 py-1.5 text-sm rounded-lg border border-slate-300 focus:border-brand outline-none">
+                    <button type="submit" class="text-xs px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600">Update</button>
+                </form>
+                <p class="w-24 text-right font-semibold text-slate-800">৳ <span th:text="${#numbers.formatInteger(line.lineTotal, 1, 'COMMA')}">0</span></p>
+                <form th:action="@{/shop/cart/remove}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <input type="hidden" name="productId" th:value="${line.productId}">
+                    <button type="submit" class="text-slate-400 hover:text-red-500 px-1" title="Remove">&times;</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="space-y-4">
+            <div class="bg-white rounded-2xl border border-slate-200 p-6">
+                <h2 class="font-bold text-slate-800 mb-4">Order Summary</h2>
+
+                <form th:action="@{/shop/cart/coupon}" method="post" class="flex gap-2 mb-4">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <input type="text" name="code" th:value="${couponCode}" placeholder="Coupon code"
+                           class="flex-1 px-3 py-2 text-sm rounded-lg border border-slate-300 focus:border-brand outline-none uppercase">
+                    <button type="submit" class="px-3 py-2 text-sm rounded-lg bg-slate-800 text-white">Apply</button>
+                </form>
+
+                <dl class="text-sm space-y-2">
+                    <div class="flex justify-between"><dt class="text-slate-500">Subtotal</dt><dd class="text-slate-700">৳ <span th:text="${#numbers.formatInteger(subtotal, 1, 'COMMA')}">0</span></dd></div>
+                    <div class="flex justify-between" th:if="${discount != null and discount.signum() > 0}">
+                        <dt class="text-slate-500">Discount</dt>
+                        <dd class="text-emerald-600">– ৳ <span th:text="${#numbers.formatInteger(discount, 1, 'COMMA')}">0</span></dd>
+                    </div>
+                    <div class="flex justify-between border-t border-slate-200 pt-2 font-semibold text-base">
+                        <dt class="text-slate-800">Total</dt>
+                        <dd class="text-slate-900">৳ <span th:text="${#numbers.formatInteger(total, 1, 'COMMA')}">0</span></dd>
+                    </div>
+                </dl>
+                <p class="text-xs text-slate-400 mt-2">Shipping calculated at checkout.</p>
+
+                <a th:href="@{/shop/checkout}" class="block text-center mt-5 py-2.5 rounded-lg bg-brand hover:bg-brand-dark text-white font-semibold">Proceed to checkout</a>
+                <a th:href="@{/shop}" class="block text-center mt-2 py-2.5 rounded-lg bg-white border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-50">Continue shopping</a>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer class="max-w-6xl mx-auto px-4 py-8 text-center text-xs text-slate-400">
+    Meridian Shop &copy; 2026 · Powered by Meridian ERP
+</footer>
+</body>
+</html>

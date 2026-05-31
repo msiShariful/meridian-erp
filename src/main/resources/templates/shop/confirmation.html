@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmed · Meridian Shop</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: {
+            colors: { navy: '#0f172a', brand: '#6366f1', 'brand-dark': '#4f46e5' },
+            fontFamily: { sans: ['Inter','ui-sans-serif','system-ui'] } } } }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="font-sans bg-slate-100 text-slate-800">
+
+<div th:replace="~{shop/fragments :: nav(${cartCount})}"></div>
+
+<main class="max-w-2xl mx-auto px-4 py-12">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 text-center">
+        <div class="w-16 h-16 mx-auto rounded-full bg-emerald-100 flex items-center justify-center">
+            <svg class="w-9 h-9 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        </div>
+        <h1 class="text-2xl font-extrabold text-navy mt-5">Thank you for your order!</h1>
+        <p class="text-slate-500 mt-2">Your order has been placed successfully. We'll be in touch shortly.</p>
+        <p class="mt-4 inline-block px-4 py-2 rounded-lg bg-slate-100 font-mono font-semibold text-slate-700" th:text="${order.orderNumber}">ORD-0001</p>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mt-6">
+        <h2 class="font-bold text-slate-800 mb-4">Order Details</h2>
+        <table class="w-full text-sm">
+            <thead class="text-slate-500 text-left border-b border-slate-100">
+                <tr>
+                    <th class="py-2 font-medium">Product</th>
+                    <th class="py-2 font-medium text-center">Qty</th>
+                    <th class="py-2 font-medium text-right">Total</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                <tr th:each="item : ${order.items}">
+                    <td class="py-2 text-slate-700" th:text="${item.productName}">Product</td>
+                    <td class="py-2 text-center text-slate-600" th:text="${item.quantity}">1</td>
+                    <td class="py-2 text-right text-slate-700">৳ <span th:text="${#numbers.formatInteger(item.lineTotal, 1, 'COMMA')}">0</span></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <dl class="text-sm space-y-2 mt-4 border-t border-slate-100 pt-4">
+            <div class="flex justify-between"><dt class="text-slate-500">Subtotal</dt><dd class="text-slate-700">৳ <span th:text="${#numbers.formatInteger(order.subtotal, 1, 'COMMA')}">0</span></dd></div>
+            <div class="flex justify-between" th:if="${order.discount != null and order.discount.signum() > 0}">
+                <dt class="text-slate-500">Discount</dt><dd class="text-emerald-600">– ৳ <span th:text="${#numbers.formatInteger(order.discount, 1, 'COMMA')}">0</span></dd>
+            </div>
+            <div class="flex justify-between"><dt class="text-slate-500">Shipping</dt><dd class="text-slate-700">৳ <span th:text="${#numbers.formatInteger(order.shipping, 1, 'COMMA')}">0</span></dd></div>
+            <div class="flex justify-between border-t border-slate-200 pt-2 font-semibold text-base"><dt class="text-slate-800">Total</dt><dd class="text-slate-900">৳ <span th:text="${#numbers.formatInteger(order.total, 1, 'COMMA')}">0</span></dd></div>
+        </dl>
+
+        <div class="mt-5 text-sm text-slate-500">
+            <p>Payment method: <span class="text-slate-700" th:text="${order.paymentMethod} ?: '—'">COD</span></p>
+            <p class="mt-1">Shipping to: <span class="text-slate-700" th:text="${order.shippingAddress} ?: '—'">Address</span></p>
+        </div>
+    </div>
+
+    <div class="text-center mt-6">
+        <a th:href="@{/shop}" class="inline-block px-6 py-2.5 rounded-lg bg-brand hover:bg-brand-dark text-white font-semibold">Continue shopping</a>
+    </div>
+</main>
+
+<footer class="max-w-6xl mx-auto px-4 py-8 text-center text-xs text-slate-400">
+    Meridian Shop &copy; 2026 · Powered by Meridian ERP
+</footer>
+</body>
+</html>

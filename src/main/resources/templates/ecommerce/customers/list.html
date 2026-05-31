@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Customers</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('E-Commerce', '', 'Customers')}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Customers</h1>
+            <p class="text-slate-500 text-sm mt-1">Your storefront shoppers and their spend.</p>
+        </div>
+        <a sec:authorize="hasAuthority('ECOMMERCE_EDIT')" th:href="@{/ecommerce/customers/new}" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand hover:bg-brand-dark text-white">+ New Customer</a>
+    </div>
+
+    <div th:replace="~{layout/components :: listToolbar('/ecommerce/customers', ${q})}"></div>
+
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div th:if="${customers.isEmpty()}" th:replace="~{layout/components :: emptyState('No customers found', 'Customers will appear here once they place orders.', '/ecommerce/customers/new', '+ New Customer')}"></div>
+
+        <table th:unless="${customers.isEmpty()}" class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-500 text-left">
+                <tr>
+                    <th class="px-5 py-3 font-medium">Customer</th>
+                    <th class="px-5 py-3 font-medium">Phone</th>
+                    <th class="px-5 py-3 font-medium">Orders</th>
+                    <th class="px-5 py-3 font-medium">Total Spent</th>
+                    <th class="px-5 py-3 font-medium text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                <tr th:each="customer : ${customers.content}" class="hover:bg-slate-50">
+                    <td class="px-5 py-3">
+                        <a th:href="@{/ecommerce/customers/{id}(id=${customer.id})}" class="flex items-center gap-3 group">
+                            <span class="w-8 h-8 rounded-full bg-brand/15 text-brand flex items-center justify-center text-xs font-semibold" th:text="${customer.initials}">AB</span>
+                            <span>
+                                <span class="font-medium text-slate-700 group-hover:text-brand" th:text="${customer.name}">Name</span>
+                                <span class="block text-xs text-slate-400" th:text="${customer.email} ?: '—'">email</span>
+                            </span>
+                        </a>
+                    </td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${customer.phone} ?: '—'">phone</td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${customer.ordersCount}">0</td>
+                    <td class="px-5 py-3 text-slate-700">৳ <span th:text="${#numbers.formatInteger(customer.totalSpent, 1, 'COMMA')}">0</span></td>
+                    <td class="px-5 py-3 text-right whitespace-nowrap">
+                        <a sec:authorize="hasAuthority('ECOMMERCE_EDIT')" th:href="@{/ecommerce/customers/{id}/edit(id=${customer.id})}" class="text-slate-400 hover:text-brand px-1.5" title="Edit">✎</a>
+                        <form sec:authorize="hasAuthority('ECOMMERCE_EDIT')" th:action="@{/ecommerce/customers/{id}/delete(id=${customer.id})}" method="post" class="inline" data-confirm="Delete this customer?">
+                            <button class="text-slate-400 hover:text-danger px-1.5" title="Delete">🗑</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div th:replace="~{layout/components :: pagination(${customers}, '/ecommerce/customers', ${q})}"></div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Coupons</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('E-Commerce', '', 'Coupons')}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Coupons</h1>
+            <p class="text-slate-500 text-sm mt-1">Discount codes for your storefront.</p>
+        </div>
+        <a sec:authorize="hasAuthority('ECOMMERCE_EDIT')" th:href="@{/ecommerce/coupons/new}" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand hover:bg-brand-dark text-white">+ New Coupon</a>
+    </div>
+
+    <div th:replace="~{layout/components :: listToolbar('/ecommerce/coupons', ${q})}"></div>
+
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div th:if="${coupons.isEmpty()}" th:replace="~{layout/components :: emptyState('No coupons found', 'Create discount codes to boost storefront sales.', '/ecommerce/coupons/new', '+ New Coupon')}"></div>
+
+        <table th:unless="${coupons.isEmpty()}" class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-500 text-left">
+                <tr>
+                    <th class="px-5 py-3 font-medium">Code</th>
+                    <th class="px-5 py-3 font-medium">Type</th>
+                    <th class="px-5 py-3 font-medium">Value</th>
+                    <th class="px-5 py-3 font-medium">Min Order</th>
+                    <th class="px-5 py-3 font-medium">Usage</th>
+                    <th class="px-5 py-3 font-medium">Expiry</th>
+                    <th class="px-5 py-3 font-medium">Active</th>
+                    <th class="px-5 py-3 font-medium text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                <tr th:each="coupon : ${coupons.content}" class="hover:bg-slate-50">
+                    <td class="px-5 py-3"><span class="font-mono font-semibold text-slate-700" th:text="${coupon.code}">CODE</span></td>
+                    <td class="px-5 py-3"><span th:replace="~{layout/components :: badge(${coupon.type.label}, ${coupon.type.color})}"></span></td>
+                    <td class="px-5 py-3 text-slate-700">
+                        <span th:if="${coupon.type.name() == 'PERCENT'}" th:text="${coupon.value} + '%'">10%</span>
+                        <span th:unless="${coupon.type.name() == 'PERCENT'}">৳ <span th:text="${#numbers.formatInteger(coupon.value, 1, 'COMMA')}">0</span></span>
+                    </td>
+                    <td class="px-5 py-3 text-slate-600">৳ <span th:text="${#numbers.formatInteger(coupon.minOrderValue, 1, 'COMMA')}">0</span></td>
+                    <td class="px-5 py-3 text-slate-600">
+                        <span th:text="${coupon.usedCount}">0</span> / <span th:text="${coupon.usageLimit == 0 ? '∞' : coupon.usageLimit}">∞</span>
+                    </td>
+                    <td class="px-5 py-3 text-slate-500" th:text="${coupon.expiryDate != null ? #temporals.format(coupon.expiryDate, 'dd MMM yyyy') : '—'}">date</td>
+                    <td class="px-5 py-3">
+                        <span th:if="${coupon.active}" th:replace="~{layout/components :: badge('Active', 'success')}"></span>
+                        <span th:unless="${coupon.active}" th:replace="~{layout/components :: badge('Inactive', 'default')}"></span>
+                    </td>
+                    <td class="px-5 py-3 text-right whitespace-nowrap">
+                        <a sec:authorize="hasAuthority('ECOMMERCE_EDIT')" th:href="@{/ecommerce/coupons/{id}/edit(id=${coupon.id})}" class="text-slate-400 hover:text-brand px-1.5" title="Edit">✎</a>
+                        <form sec:authorize="hasAuthority('ECOMMERCE_EDIT')" th:action="@{/ecommerce/coupons/{id}/delete(id=${coupon.id})}" method="post" class="inline" data-confirm="Delete this coupon?">
+                            <button class="text-slate-400 hover:text-danger px-1.5" title="Delete">🗑</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div th:replace="~{layout/components :: pagination(${coupons}, '/ecommerce/coupons', ${q})}"></div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title th:text="${customer.name}">Customer</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('Customers', '/ecommerce/customers', ${customer.name})}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div class="flex items-center gap-4">
+            <span class="w-14 h-14 rounded-full bg-brand/15 text-brand flex items-center justify-center text-lg font-bold" th:text="${customer.initials}">AB</span>
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800" th:text="${customer.name}">Name</h1>
+                <p class="text-slate-500 text-sm" th:text="${customer.email} ?: 'No email'">email</p>
+            </div>
+        </div>
+        <a sec:authorize="hasAuthority('ECOMMERCE_EDIT')" th:href="@{/ecommerce/customers/{id}/edit(id=${customer.id})}" class="px-4 py-2 text-sm font-medium rounded-lg bg-white border border-slate-300 hover:bg-slate-50">Edit</a>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="space-y-6">
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                <h2 class="font-semibold text-slate-800 mb-4">Customer Details</h2>
+                <dl class="text-sm space-y-3">
+                    <div><dt class="text-slate-400">Phone</dt><dd class="text-slate-700" th:text="${customer.phone} ?: '—'"></dd></div>
+                    <div><dt class="text-slate-400">Address</dt><dd class="text-slate-700 whitespace-pre-line" th:text="${customer.address} ?: '—'"></dd></div>
+                    <div><dt class="text-slate-400">Orders</dt><dd class="text-slate-700" th:text="${customer.ordersCount}">0</dd></div>
+                    <div><dt class="text-slate-400">Total spent</dt><dd class="text-slate-700">৳ <span th:text="${#numbers.formatInteger(customer.totalSpent, 1, 'COMMA')}">0</span></dd></div>
+                </dl>
+            </div>
+        </div>
+
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <h2 class="font-semibold text-slate-800 p-6 pb-4">Order History</h2>
+                <p th:if="${orders.isEmpty()}" class="px-6 pb-6 text-sm text-slate-400">No orders found for this customer.</p>
+                <table th:unless="${orders.isEmpty()}" class="w-full text-sm">
+                    <thead class="bg-slate-50 text-slate-500 text-left">
+                        <tr>
+                            <th class="px-5 py-3 font-medium">Order #</th>
+                            <th class="px-5 py-3 font-medium">Date</th>
+                            <th class="px-5 py-3 font-medium">Total</th>
+                            <th class="px-5 py-3 font-medium">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        <tr th:each="order : ${orders}" class="hover:bg-slate-50">
+                            <td class="px-5 py-3"><a th:href="@{/ecommerce/orders/{id}(id=${order.id})}" class="font-medium text-slate-700 hover:text-brand" th:text="${order.orderNumber}">ORD-0001</a></td>
+                            <td class="px-5 py-3 text-slate-500" th:text="${#temporals.format(order.createdAt, 'dd MMM yyyy')}">date</td>
+                            <td class="px-5 py-3 text-slate-700">৳ <span th:text="${#numbers.formatInteger(order.total, 1, 'COMMA')}">0</span></td>
+                            <td class="px-5 py-3"><span th:replace="~{layout/components :: badge(${order.status.label}, ${order.status.color})}"></span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

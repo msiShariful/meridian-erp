@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Shipping Methods</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('E-Commerce', '', 'Shipping Methods')}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Shipping Methods</h1>
+            <p class="text-slate-500 text-sm mt-1">Delivery options offered at checkout.</p>
+        </div>
+        <a sec:authorize="hasAuthority('ECOMMERCE_EDIT')" th:href="@{/ecommerce/shipping/new}" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand hover:bg-brand-dark text-white">+ New Method</a>
+    </div>
+
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div th:if="${methods.isEmpty()}" th:replace="~{layout/components :: emptyState('No shipping methods', 'Add a shipping method to offer it at checkout.', '/ecommerce/shipping/new', '+ New Method')}"></div>
+
+        <table th:unless="${methods.isEmpty()}" class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-500 text-left">
+                <tr>
+                    <th class="px-5 py-3 font-medium">Name</th>
+                    <th class="px-5 py-3 font-medium">Rate</th>
+                    <th class="px-5 py-3 font-medium">Free Above</th>
+                    <th class="px-5 py-3 font-medium text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                <tr th:each="method : ${methods}" class="hover:bg-slate-50">
+                    <td class="px-5 py-3 font-medium text-slate-700" th:text="${method.name}">Name</td>
+                    <td class="px-5 py-3 text-slate-700">৳ <span th:text="${#numbers.formatInteger(method.rate, 1, 'COMMA')}">0</span></td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${method.freeAbove != null ? '৳ ' + #numbers.formatInteger(method.freeAbove, 1, 'COMMA') : '—'}">—</td>
+                    <td class="px-5 py-3 text-right whitespace-nowrap">
+                        <a sec:authorize="hasAuthority('ECOMMERCE_EDIT')" th:href="@{/ecommerce/shipping/{id}/edit(id=${method.id})}" class="text-slate-400 hover:text-brand px-1.5" title="Edit">✎</a>
+                        <form sec:authorize="hasAuthority('ECOMMERCE_EDIT')" th:action="@{/ecommerce/shipping/{id}/delete(id=${method.id})}" method="post" class="inline" data-confirm="Delete this shipping method?">
+                            <button class="text-slate-400 hover:text-danger px-1.5" title="Delete">🗑</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>
