@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Notifications</title></head>
+<body>
+<div layout:fragment="content">
+    <div th:replace="~{layout/components :: breadcrumb('Notifications', '', '')}"></div>
+    <div class="flex items-center justify-between gap-4 mb-6">
+        <div><h1 class="text-2xl font-bold text-slate-800">Notifications</h1>
+            <p class="text-slate-500 text-sm mt-1">Your latest alerts and updates.</p></div>
+        <form th:action="@{/notifications/read-all}" method="post">
+            <button class="px-4 py-2 text-sm font-medium rounded-lg bg-white border border-slate-300 hover:bg-slate-50">Mark all as read</button>
+        </form>
+    </div>
+
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div th:if="${notifications.isEmpty()}" th:replace="~{layout/components :: emptyState('No notifications', 'You are all caught up!', null, null)}"></div>
+        <ul class="divide-y divide-slate-100">
+            <li th:each="n : ${notifications.content}" th:classappend="${n.readFlag} ? '' : 'bg-indigo-50/40'"
+                class="px-5 py-4 flex items-start gap-4 hover:bg-slate-50">
+                <span th:classappend="${n.color == 'success'} ? 'bg-emerald-100 text-emerald-600'
+                       : (${n.color == 'warning'} ? 'bg-amber-100 text-amber-600'
+                       : (${n.color == 'danger'} ? 'bg-red-100 text-red-600' : 'bg-indigo-100 text-brand'))"
+                      class="w-9 h-9 rounded-full flex items-center justify-center shrink-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2c0 .5-.2 1-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                </span>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2">
+                        <p class="font-medium text-slate-800" th:text="${n.title}">Title</p>
+                        <span th:unless="${n.readFlag}" class="w-2 h-2 rounded-full bg-brand"></span>
+                    </div>
+                    <p class="text-sm text-slate-500" th:text="${n.message}">Message</p>
+                    <p class="text-xs text-slate-400 mt-1" th:text="${n.createdAt != null ? #temporals.format(n.createdAt, 'dd MMM yyyy, HH:mm') : ''}">time</p>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <a th:if="${n.link}" th:href="@{${n.link}}" class="text-sm text-brand hover:underline">View</a>
+                    <form th:unless="${n.readFlag}" th:action="@{/notifications/{id}/read(id=${n.id})}" method="post">
+                        <button class="text-xs text-slate-400 hover:text-brand">Mark read</button>
+                    </form>
+                </div>
+            </li>
+        </ul>
+        <div th:replace="~{layout/components :: pagination(${notifications}, '/notifications', '')}"></div>
+    </div>
+</div>
+</body>
+</html>
