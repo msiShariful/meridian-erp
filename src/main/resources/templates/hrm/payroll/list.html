@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Payroll</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('HRM', '', 'Payroll')}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Payroll</h1>
+            <p class="text-slate-500 text-sm mt-1">Process and track employee salaries.</p>
+        </div>
+        <a sec:authorize="hasAuthority('HRM_EDIT')" th:href="@{/hrm/payroll/new}" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand hover:bg-brand-dark text-white">+ Generate Payroll</a>
+    </div>
+
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div th:if="${payrolls.isEmpty()}" th:replace="~{layout/components :: emptyState('No payroll records', 'Generate payroll to get started.', '/hrm/payroll/new', '+ Generate Payroll')}"></div>
+
+        <table th:unless="${payrolls.isEmpty()}" class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-500 text-left">
+                <tr>
+                    <th class="px-5 py-3 font-medium">Employee</th>
+                    <th class="px-5 py-3 font-medium">Period</th>
+                    <th class="px-5 py-3 font-medium">Net Salary</th>
+                    <th class="px-5 py-3 font-medium">Status</th>
+                    <th class="px-5 py-3 font-medium text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                <tr th:each="p : ${payrolls.content}" class="hover:bg-slate-50">
+                    <td class="px-5 py-3">
+                        <a th:href="@{/hrm/payroll/{id}(id=${p.id})}" class="font-medium text-slate-700 hover:text-brand" th:text="${p.employee != null ? p.employee.fullName : '—'}">Name</a>
+                    </td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${p.period} ?: '—'">2026-05</td>
+                    <td class="px-5 py-3 text-slate-700">৳ <span th:text="${#numbers.formatInteger(p.netSalary, 1, 'COMMA')}">0</span></td>
+                    <td class="px-5 py-3">
+                        <span th:replace="~{layout/components :: badge(${p.status.label}, ${p.status.color})}"></span>
+                    </td>
+                    <td class="px-5 py-3 text-right whitespace-nowrap">
+                        <a th:href="@{/hrm/payroll/{id}(id=${p.id})}" class="text-slate-400 hover:text-brand px-1.5" title="Payslip">View</a>
+                        <form sec:authorize="hasAuthority('HRM_EDIT')" th:action="@{/hrm/payroll/{id}/delete(id=${p.id})}" method="post" class="inline" data-confirm="Delete this payroll record?">
+                            <button class="text-slate-400 hover:text-danger px-1.5" title="Delete">🗑</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div th:replace="~{layout/components :: pagination(${payrolls}, '/hrm/payroll', null)}"></div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Payslip</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('Payroll', '/hrm/payroll', 'Payslip')}"></div>
+
+    <div class="flex items-center justify-between gap-4 mb-6">
+        <h1 class="text-2xl font-bold text-slate-800">Payslip</h1>
+        <button onclick="window.print()" class="px-4 py-2 text-sm font-medium rounded-lg bg-white border border-slate-300 hover:bg-slate-50 print:hidden">Print</button>
+    </div>
+
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-8 max-w-2xl">
+        <div class="flex items-start justify-between border-b border-slate-100 pb-5 mb-5">
+            <div>
+                <h2 class="text-lg font-bold text-slate-800">Meridian ERP</h2>
+                <p class="text-sm text-slate-500">Salary Statement</p>
+            </div>
+            <div class="text-right">
+                <p class="text-sm text-slate-500">Period</p>
+                <p class="font-semibold text-slate-800" th:text="${payroll.period} ?: '—'">2026-05</p>
+            </div>
+        </div>
+
+        <dl class="grid grid-cols-2 gap-y-3 text-sm mb-6">
+            <div><dt class="text-slate-400">Employee</dt><dd class="text-slate-700 font-medium" th:text="${payroll.employee != null ? payroll.employee.fullName : '—'}">Name</dd></div>
+            <div><dt class="text-slate-400">Employee ID</dt><dd class="text-slate-700" th:text="${payroll.employee != null ? payroll.employee.employeeId : '—'}">EMP-0001</dd></div>
+            <div><dt class="text-slate-400">Department</dt><dd class="text-slate-700" th:text="${payroll.employee != null and payroll.employee.department != null ? payroll.employee.department.name : '—'}">Dept</dd></div>
+            <div><dt class="text-slate-400">Status</dt><dd><span th:replace="~{layout/components :: badge(${payroll.status.label}, ${payroll.status.color})}"></span></dd></div>
+        </dl>
+
+        <table class="w-full text-sm border-t border-slate-100">
+            <tbody class="divide-y divide-slate-100">
+                <tr><td class="py-3 text-slate-600">Basic salary</td><td class="py-3 text-right text-slate-700">৳ <span th:text="${#numbers.formatInteger(payroll.basicSalary, 1, 'COMMA')}">0</span></td></tr>
+                <tr><td class="py-3 text-slate-600">Allowances</td><td class="py-3 text-right text-emerald-600">+ ৳ <span th:text="${#numbers.formatInteger(payroll.allowances, 1, 'COMMA')}">0</span></td></tr>
+                <tr><td class="py-3 text-slate-600">Deductions</td><td class="py-3 text-right text-red-600">− ৳ <span th:text="${#numbers.formatInteger(payroll.deductions, 1, 'COMMA')}">0</span></td></tr>
+            </tbody>
+            <tfoot>
+                <tr class="border-t-2 border-slate-200">
+                    <td class="py-3 font-bold text-slate-800">Net Salary</td>
+                    <td class="py-3 text-right font-bold text-slate-800 text-lg">৳ <span th:text="${#numbers.formatInteger(payroll.netSalary, 1, 'COMMA')}">0</span></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+</body>
+</html>

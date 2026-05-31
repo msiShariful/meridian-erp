@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title th:text="${pageTitle}">Training</title></head>
+<body>
+<div layout:fragment="content">
+    <div th:replace="~{layout/components :: breadcrumb('Training', '/hrm/training', ${pageTitle})}"></div>
+    <h1 class="text-2xl font-bold text-slate-800 mb-6" th:text="${pageTitle}">Training</h1>
+
+    <form th:action="@{/hrm/training/save}" th:object="${training}" method="post" class="max-w-2xl">
+        <input type="hidden" th:field="*{id}">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Training name <span class="text-danger">*</span></label>
+                <input th:field="*{name}" required class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand focus:ring-1 focus:ring-brand outline-none">
+                <p th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="text-xs text-danger mt-1"></p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Trainer</label>
+                <input th:field="*{trainer}" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Type</label>
+                <input th:field="*{type}" placeholder="Technical, Soft Skills…" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Start date</label>
+                <input type="date" th:field="*{startDate}" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Duration (days)</label>
+                <input type="number" min="1" th:field="*{durationDays}" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Cost (৳)</label>
+                <input type="number" step="0.01" min="0" th:field="*{cost}" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Status</label>
+                <select th:field="*{status}" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand outline-none">
+                    <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"></option>
+                </select>
+            </div>
+        </div>
+        <div class="flex gap-2 mt-5">
+            <button type="submit" class="bg-brand hover:bg-brand-dark text-white font-semibold px-5 py-2.5 rounded-lg">Save Training</button>
+            <a th:href="@{/hrm/training}" class="px-5 py-2.5 rounded-lg bg-white border border-slate-300 text-slate-700 font-medium hover:bg-slate-50">Cancel</a>
+        </div>
+    </form>
+</div>
+</body>
+</html>

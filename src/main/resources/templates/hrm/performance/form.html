@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title th:text="${pageTitle}">Performance Review</title></head>
+<body>
+<div layout:fragment="content">
+    <div th:replace="~{layout/components :: breadcrumb('Performance', '/hrm/performance', ${pageTitle})}"></div>
+    <h1 class="text-2xl font-bold text-slate-800 mb-6" th:text="${pageTitle}">Performance Review</h1>
+
+    <form th:action="@{/hrm/performance/save}" th:object="${review}" method="post" class="max-w-2xl">
+        <input type="hidden" th:field="*{id}">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Employee <span class="text-danger">*</span></label>
+                <select name="employeeId" required class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand outline-none">
+                    <option value="">Select…</option>
+                    <option th:each="e : ${employees}" th:value="${e.id}" th:text="${e.fullName} + ' (' + ${e.employeeId} + ')'"
+                            th:selected="${review.employee != null and review.employee.id == e.id}"></option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Period</label>
+                <input th:field="*{period}" placeholder="Q1-2026" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand outline-none">
+            </div>
+            <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Rating</label>
+                <div class="flex items-center gap-4">
+                    <select th:field="*{rating}" class="px-3 py-2 rounded-lg border border-slate-300 focus:border-brand outline-none">
+                        <option th:each="n : ${ratings}" th:value="${n}" th:text="${n} + ' ★'"></option>
+                    </select>
+                    <span class="whitespace-nowrap">
+                        <span th:each="i : ${#numbers.sequence(1,5)}"
+                              th:classappend="${i <= review.rating} ? 'text-amber-400' : 'text-slate-200'">★</span>
+                    </span>
+                </div>
+            </div>
+            <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Goals</label>
+                <textarea th:field="*{goals}" rows="3" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand outline-none"></textarea>
+            </div>
+            <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Comments</label>
+                <textarea th:field="*{comments}" rows="3" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand outline-none"></textarea>
+            </div>
+        </div>
+        <div class="flex gap-2 mt-5">
+            <button type="submit" class="bg-brand hover:bg-brand-dark text-white font-semibold px-5 py-2.5 rounded-lg">Save Review</button>
+            <a th:href="@{/hrm/performance}" class="px-5 py-2.5 rounded-lg bg-white border border-slate-300 text-slate-700 font-medium hover:bg-slate-50">Cancel</a>
+        </div>
+    </form>
+</div>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Employees</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('HRM', '', 'Employees')}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Employees</h1>
+            <p class="text-slate-500 text-sm mt-1">Manage your organization's workforce.</p>
+        </div>
+        <a sec:authorize="hasAuthority('HRM_EDIT')" th:href="@{/hrm/employees/new}" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand hover:bg-brand-dark text-white">+ New Employee</a>
+    </div>
+
+    <div th:replace="~{layout/components :: listToolbar('/hrm/employees', ${q})}"></div>
+
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div th:if="${employees.isEmpty()}" th:replace="~{layout/components :: emptyState('No employees found', 'Add your first employee to get started.', '/hrm/employees/new', '+ New Employee')}"></div>
+
+        <table th:unless="${employees.isEmpty()}" class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-500 text-left">
+                <tr>
+                    <th class="px-5 py-3 font-medium">Employee</th>
+                    <th class="px-5 py-3 font-medium">ID</th>
+                    <th class="px-5 py-3 font-medium">Department</th>
+                    <th class="px-5 py-3 font-medium">Designation</th>
+                    <th class="px-5 py-3 font-medium">Status</th>
+                    <th class="px-5 py-3 font-medium">Joined</th>
+                    <th class="px-5 py-3 font-medium text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                <tr th:each="emp : ${employees.content}" class="hover:bg-slate-50">
+                    <td class="px-5 py-3">
+                        <a th:href="@{/hrm/employees/{id}(id=${emp.id})}" class="flex items-center gap-3 group">
+                            <span class="w-8 h-8 rounded-full bg-brand/15 text-brand flex items-center justify-center text-xs font-semibold overflow-hidden">
+                                <img th:if="${emp.photo}" th:src="@{${emp.photo}}" class="w-full h-full object-cover" alt="">
+                                <span th:unless="${emp.photo}" th:text="${emp.initials}">AB</span>
+                            </span>
+                            <span>
+                                <span class="font-medium text-slate-700 group-hover:text-brand" th:text="${emp.fullName}">Name</span>
+                                <span class="block text-xs text-slate-400" th:text="${emp.email}">email</span>
+                            </span>
+                        </a>
+                    </td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${emp.employeeId} ?: '—'">EMP-0001</td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${emp.department != null ? emp.department.name : '—'}">Dept</td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${emp.designation != null ? emp.designation.title : '—'}">Designation</td>
+                    <td class="px-5 py-3">
+                        <span th:replace="~{layout/components :: badge(${emp.status.label}, ${emp.status.color})}"></span>
+                    </td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${emp.joinDate != null ? #temporals.format(emp.joinDate, 'dd MMM yyyy') : '—'}">date</td>
+                    <td class="px-5 py-3 text-right whitespace-nowrap">
+                        <a sec:authorize="hasAuthority('HRM_EDIT')" th:href="@{/hrm/employees/{id}/edit(id=${emp.id})}" class="text-slate-400 hover:text-brand px-1.5" title="Edit">✎</a>
+                        <form sec:authorize="hasAuthority('HRM_EDIT')" th:action="@{/hrm/employees/{id}/delete(id=${emp.id})}" method="post" class="inline" data-confirm="Delete this employee?">
+                            <button class="text-slate-400 hover:text-danger px-1.5" title="Delete">🗑</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div th:replace="~{layout/components :: pagination(${employees}, '/hrm/employees', ${q})}"></div>
+    </div>
+</div>
+</body>
+</html>

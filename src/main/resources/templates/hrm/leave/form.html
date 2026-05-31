@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title th:text="${pageTitle}">Apply for Leave</title></head>
+<body>
+<div layout:fragment="content">
+    <div th:replace="~{layout/components :: breadcrumb('Leave', '/hrm/leave', ${pageTitle})}"></div>
+    <h1 class="text-2xl font-bold text-slate-800 mb-6" th:text="${pageTitle}">Apply for Leave</h1>
+
+    <form th:action="@{/hrm/leave/save}" th:object="${leave}" method="post" class="max-w-2xl">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Employee <span class="text-danger">*</span></label>
+                <select name="employeeId" required class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand outline-none">
+                    <option value="">Select…</option>
+                    <option th:each="e : ${employees}" th:value="${e.id}" th:text="${e.fullName} + ' (' + ${e.employeeId} + ')'"></option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Leave type <span class="text-danger">*</span></label>
+                <select name="leaveTypeId" required class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand outline-none">
+                    <option value="">Select…</option>
+                    <option th:each="t : ${leaveTypes}" th:value="${t.id}" th:text="${t.name} + ' (' + ${t.daysPerYear} + ' days/yr)'"></option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Start date <span class="text-danger">*</span></label>
+                <input type="date" th:field="*{startDate}" required class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">End date <span class="text-danger">*</span></label>
+                <input type="date" th:field="*{endDate}" required class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand outline-none">
+            </div>
+            <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">Reason</label>
+                <textarea th:field="*{reason}" rows="3" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-brand outline-none"></textarea>
+            </div>
+        </div>
+        <div class="flex gap-2 mt-5">
+            <button type="submit" class="bg-brand hover:bg-brand-dark text-white font-semibold px-5 py-2.5 rounded-lg">Submit Request</button>
+            <a th:href="@{/hrm/leave}" class="px-5 py-2.5 rounded-lg bg-white border border-slate-300 text-slate-700 font-medium hover:bg-slate-50">Cancel</a>
+        </div>
+    </form>
+</div>
+</body>
+</html>

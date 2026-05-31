@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Departments</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('HRM', '', 'Departments')}"></div>
+
+    <div class="flex items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Departments</h1>
+            <p class="text-slate-500 text-sm mt-1">Organize your workforce into teams.</p>
+        </div>
+        <a sec:authorize="hasAuthority('HRM_EDIT')" th:href="@{/hrm/departments/new}" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand hover:bg-brand-dark text-white">+ New Department</a>
+    </div>
+
+    <div th:replace="~{layout/components :: listToolbar('/hrm/departments', ${q})}"></div>
+
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div th:if="${departments.isEmpty()}" th:replace="~{layout/components :: emptyState('No departments yet', 'Create your first department to organize employees.', '/hrm/departments/new', '+ New Department')}"></div>
+
+        <table th:unless="${departments.isEmpty()}" class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-500 text-left">
+                <tr>
+                    <th class="px-5 py-3 font-medium">Department</th>
+                    <th class="px-5 py-3 font-medium">Head</th>
+                    <th class="px-5 py-3 font-medium">Employees</th>
+                    <th class="px-5 py-3 font-medium text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                <tr th:each="d : ${departments.content}" class="hover:bg-slate-50">
+                    <td class="px-5 py-3">
+                        <span class="font-medium text-slate-700" th:text="${d.name}">Name</span>
+                        <span class="block text-xs text-slate-400" th:text="${d.description} ?: ''">desc</span>
+                    </td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${d.head} ?: '—'">Head</td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${counts.get(d.id)}">0</td>
+                    <td class="px-5 py-3 text-right whitespace-nowrap">
+                        <a sec:authorize="hasAuthority('HRM_EDIT')" th:href="@{/hrm/departments/{id}/edit(id=${d.id})}" class="text-slate-400 hover:text-brand px-1.5" title="Edit">✎</a>
+                        <form sec:authorize="hasAuthority('HRM_EDIT')" th:action="@{/hrm/departments/{id}/delete(id=${d.id})}" method="post" class="inline" data-confirm="Delete this department?">
+                            <button class="text-slate-400 hover:text-danger px-1.5" title="Delete">🗑</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div th:replace="~{layout/components :: pagination(${departments}, '/hrm/departments', ${q})}"></div>
+    </div>
+</div>
+</body>
+</html>

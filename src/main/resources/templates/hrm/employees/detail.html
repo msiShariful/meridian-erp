@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title th:text="${employee.fullName}">Employee</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('Employees', '/hrm/employees', ${employee.fullName})}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div class="flex items-center gap-4">
+            <span class="w-14 h-14 rounded-full bg-brand/15 text-brand flex items-center justify-center text-lg font-bold overflow-hidden">
+                <img th:if="${employee.photo}" th:src="@{${employee.photo}}" class="w-full h-full object-cover" alt="">
+                <span th:unless="${employee.photo}" th:text="${employee.initials}">AB</span>
+            </span>
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800" th:text="${employee.fullName}">Name</h1>
+                <p class="text-slate-500 text-sm" th:text="${employee.employeeId} ?: 'No ID'">EMP-0001</p>
+            </div>
+            <span th:replace="~{layout/components :: badge(${employee.status.label}, ${employee.status.color})}"></span>
+        </div>
+        <div class="flex gap-2" sec:authorize="hasAuthority('HRM_EDIT')">
+            <a th:href="@{/hrm/employees/{id}/edit(id=${employee.id})}" class="px-4 py-2 text-sm font-medium rounded-lg bg-white border border-slate-300 hover:bg-slate-50">Edit</a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+            <h2 class="font-semibold text-slate-800 mb-4">Personal Information</h2>
+            <dl class="grid grid-cols-2 gap-y-4 text-sm">
+                <div><dt class="text-slate-400">Email</dt><dd class="text-slate-700" th:text="${employee.email} ?: '—'"></dd></div>
+                <div><dt class="text-slate-400">Phone</dt><dd class="text-slate-700" th:text="${employee.phone} ?: '—'"></dd></div>
+                <div><dt class="text-slate-400">Gender</dt><dd class="text-slate-700" th:text="${employee.gender} ?: '—'"></dd></div>
+                <div><dt class="text-slate-400">Date of birth</dt><dd class="text-slate-700" th:text="${employee.dateOfBirth != null ? #temporals.format(employee.dateOfBirth, 'dd MMM yyyy') : '—'}"></dd></div>
+                <div class="col-span-2"><dt class="text-slate-400">Address</dt><dd class="text-slate-700" th:text="${employee.address} ?: '—'"></dd></div>
+                <div><dt class="text-slate-400">Bank account</dt><dd class="text-slate-700" th:text="${employee.bankAccount} ?: '—'"></dd></div>
+                <div><dt class="text-slate-400">Emergency contact</dt><dd class="text-slate-700" th:text="${employee.emergencyContact} ?: '—'"></dd></div>
+            </dl>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+            <h2 class="font-semibold text-slate-800 mb-4">Job Information</h2>
+            <dl class="grid grid-cols-2 gap-y-4 text-sm">
+                <div><dt class="text-slate-400">Department</dt><dd class="text-slate-700" th:text="${employee.department != null ? employee.department.name : '—'}"></dd></div>
+                <div><dt class="text-slate-400">Designation</dt><dd class="text-slate-700" th:text="${employee.designation != null ? employee.designation.title : '—'}"></dd></div>
+                <div><dt class="text-slate-400">Status</dt><dd><span th:replace="~{layout/components :: badge(${employee.status.label}, ${employee.status.color})}"></span></dd></div>
+                <div><dt class="text-slate-400">Basic salary</dt><dd class="text-slate-700">৳ <span th:text="${#numbers.formatInteger(employee.basicSalary, 1, 'COMMA')}">0</span></dd></div>
+                <div><dt class="text-slate-400">Join date</dt><dd class="text-slate-700" th:text="${employee.joinDate != null ? #temporals.format(employee.joinDate, 'dd MMM yyyy') : '—'}"></dd></div>
+                <div><dt class="text-slate-400">Employee ID</dt><dd class="text-slate-700" th:text="${employee.employeeId} ?: '—'"></dd></div>
+            </dl>
+        </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 lg:col-span-2">
+            <h2 class="font-semibold text-slate-800 mb-4">Record Dates</h2>
+            <dl class="grid grid-cols-2 gap-y-4 text-sm">
+                <div><dt class="text-slate-400">Created</dt><dd class="text-slate-700" th:text="${employee.createdAt != null ? #temporals.format(employee.createdAt, 'dd MMM yyyy') : '—'}"></dd></div>
+                <div><dt class="text-slate-400">Last updated</dt><dd class="text-slate-700" th:text="${employee.updatedAt != null ? #temporals.format(employee.updatedAt, 'dd MMM yyyy') : '—'}"></dd></div>
+            </dl>
+        </div>
+    </div>
+</div>
+</body>
+</html>

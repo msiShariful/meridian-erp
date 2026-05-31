@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Training</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('HRM', '', 'Training')}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Training</h1>
+            <p class="text-slate-500 text-sm mt-1">Plan and manage employee training programs.</p>
+        </div>
+        <a sec:authorize="hasAuthority('HRM_EDIT')" th:href="@{/hrm/training/new}" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand hover:bg-brand-dark text-white">+ New Training</a>
+    </div>
+
+    <div th:replace="~{layout/components :: listToolbar('/hrm/training', ${q})}"></div>
+
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div th:if="${trainings.isEmpty()}" th:replace="~{layout/components :: emptyState('No trainings yet', 'Schedule your first training program.', '/hrm/training/new', '+ New Training')}"></div>
+
+        <table th:unless="${trainings.isEmpty()}" class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-500 text-left">
+                <tr>
+                    <th class="px-5 py-3 font-medium">Name</th>
+                    <th class="px-5 py-3 font-medium">Trainer</th>
+                    <th class="px-5 py-3 font-medium">Type</th>
+                    <th class="px-5 py-3 font-medium">Start</th>
+                    <th class="px-5 py-3 font-medium">Duration</th>
+                    <th class="px-5 py-3 font-medium">Cost</th>
+                    <th class="px-5 py-3 font-medium">Status</th>
+                    <th class="px-5 py-3 font-medium text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                <tr th:each="t : ${trainings.content}" class="hover:bg-slate-50">
+                    <td class="px-5 py-3 font-medium text-slate-700" th:text="${t.name}">Name</td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${t.trainer} ?: '—'">Trainer</td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${t.type} ?: '—'">Type</td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${t.startDate != null ? #temporals.format(t.startDate, 'dd MMM yyyy') : '—'}">date</td>
+                    <td class="px-5 py-3 text-slate-600"><span th:text="${t.durationDays}">1</span> day(s)</td>
+                    <td class="px-5 py-3 text-slate-700">৳ <span th:text="${#numbers.formatInteger(t.cost, 1, 'COMMA')}">0</span></td>
+                    <td class="px-5 py-3">
+                        <span th:replace="~{layout/components :: badge(${t.status},
+                            ${t.status == 'COMPLETED'} ? 'success' : (${t.status == 'ONGOING'} ? 'warning' : (${t.status == 'CANCELLED'} ? 'danger' : 'info')))}"></span>
+                    </td>
+                    <td class="px-5 py-3 text-right whitespace-nowrap">
+                        <a sec:authorize="hasAuthority('HRM_EDIT')" th:href="@{/hrm/training/{id}/edit(id=${t.id})}" class="text-slate-400 hover:text-brand px-1.5" title="Edit">✎</a>
+                        <form sec:authorize="hasAuthority('HRM_EDIT')" th:action="@{/hrm/training/{id}/delete(id=${t.id})}" method="post" class="inline" data-confirm="Delete this training?">
+                            <button class="text-slate-400 hover:text-danger px-1.5" title="Delete">🗑</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div th:replace="~{layout/components :: pagination(${trainings}, '/hrm/training', ${q})}"></div>
+    </div>
+</div>
+</body>
+</html>

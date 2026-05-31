@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Leave Requests</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('HRM', '', 'Leave')}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Leave Requests</h1>
+            <p class="text-slate-500 text-sm mt-1">Review and approve employee leave.</p>
+        </div>
+        <a sec:authorize="hasAuthority('HRM_EDIT')" th:href="@{/hrm/leave/new}" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand hover:bg-brand-dark text-white">+ Apply for Leave</a>
+    </div>
+
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div th:if="${leaves.isEmpty()}" th:replace="~{layout/components :: emptyState('No leave requests', 'Apply for leave to get started.', '/hrm/leave/new', '+ Apply for Leave')}"></div>
+
+        <table th:unless="${leaves.isEmpty()}" class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-500 text-left">
+                <tr>
+                    <th class="px-5 py-3 font-medium">Employee</th>
+                    <th class="px-5 py-3 font-medium">Type</th>
+                    <th class="px-5 py-3 font-medium">Dates</th>
+                    <th class="px-5 py-3 font-medium">Days</th>
+                    <th class="px-5 py-3 font-medium">Status</th>
+                    <th class="px-5 py-3 font-medium text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                <tr th:each="l : ${leaves.content}" class="hover:bg-slate-50">
+                    <td class="px-5 py-3 text-slate-700" th:text="${l.employee != null ? l.employee.fullName : '—'}">Name</td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${l.leaveType != null ? l.leaveType.name : '—'}">Type</td>
+                    <td class="px-5 py-3 text-slate-600">
+                        <span th:text="${l.startDate != null ? #temporals.format(l.startDate, 'dd MMM') : '—'}">start</span>
+                        –
+                        <span th:text="${l.endDate != null ? #temporals.format(l.endDate, 'dd MMM yyyy') : '—'}">end</span>
+                    </td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${l.days()}">0</td>
+                    <td class="px-5 py-3">
+                        <span th:replace="~{layout/components :: badge(${l.status.label}, ${l.status.color})}"></span>
+                    </td>
+                    <td class="px-5 py-3 text-right whitespace-nowrap" sec:authorize="hasAuthority('HRM_EDIT')">
+                        <form th:if="${l.status.name() == 'PENDING'}" th:action="@{/hrm/leave/{id}/approve(id=${l.id})}" method="post" class="inline">
+                            <button class="text-emerald-600 hover:text-emerald-700 px-1.5 text-xs font-medium" title="Approve">Approve</button>
+                        </form>
+                        <form th:if="${l.status.name() == 'PENDING'}" th:action="@{/hrm/leave/{id}/reject(id=${l.id})}" method="post" class="inline">
+                            <button class="text-amber-600 hover:text-amber-700 px-1.5 text-xs font-medium" title="Reject">Reject</button>
+                        </form>
+                        <form th:action="@{/hrm/leave/{id}/delete(id=${l.id})}" method="post" class="inline" data-confirm="Delete this leave request?">
+                            <button class="text-slate-400 hover:text-danger px-1.5" title="Delete">🗑</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div th:replace="~{layout/components :: pagination(${leaves}, '/hrm/leave', null)}"></div>
+    </div>
+</div>
+</body>
+</html>

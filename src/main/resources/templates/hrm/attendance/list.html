@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Attendance</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('HRM', '', 'Attendance')}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Attendance</h1>
+            <p class="text-slate-500 text-sm mt-1">Daily attendance records.</p>
+        </div>
+        <a sec:authorize="hasAuthority('HRM_EDIT')" th:href="@{/hrm/attendance/new}" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand hover:bg-brand-dark text-white">+ Mark Attendance</a>
+    </div>
+
+    <form th:action="@{/hrm/attendance}" method="get" class="flex flex-col sm:flex-row gap-3 mb-4">
+        <input type="date" name="date" th:value="${date != null ? #temporals.format(date, 'yyyy-MM-dd') : ''}"
+               class="px-3 py-2 text-sm rounded-lg border border-slate-300 focus:border-brand outline-none">
+        <button class="px-4 py-2 text-sm rounded-lg bg-slate-800 text-white">Filter</button>
+        <a th:href="@{/hrm/attendance}" class="px-4 py-2 text-sm rounded-lg bg-white border border-slate-300 hover:bg-slate-50">Clear</a>
+    </form>
+
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div th:if="${attendance.isEmpty()}" th:replace="~{layout/components :: emptyState('No attendance records', 'Mark attendance to start tracking.', '/hrm/attendance/new', '+ Mark Attendance')}"></div>
+
+        <table th:unless="${attendance.isEmpty()}" class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-500 text-left">
+                <tr>
+                    <th class="px-5 py-3 font-medium">Employee</th>
+                    <th class="px-5 py-3 font-medium">Date</th>
+                    <th class="px-5 py-3 font-medium">Status</th>
+                    <th class="px-5 py-3 font-medium">Check-in</th>
+                    <th class="px-5 py-3 font-medium">Check-out</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                <tr th:each="a : ${attendance.content}" class="hover:bg-slate-50">
+                    <td class="px-5 py-3 text-slate-700" th:text="${a.employee != null ? a.employee.fullName : '—'}">Name</td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${a.date != null ? #temporals.format(a.date, 'dd MMM yyyy') : '—'}">date</td>
+                    <td class="px-5 py-3">
+                        <span th:replace="~{layout/components :: badge(${a.status.label}, ${a.status.color})}"></span>
+                    </td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${a.checkIn != null ? #temporals.format(a.checkIn, 'HH:mm') : '—'}">09:00</td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${a.checkOut != null ? #temporals.format(a.checkOut, 'HH:mm') : '—'}">18:00</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div th:replace="~{layout/components :: pagination(${attendance}, '/hrm/attendance', ${date})}"></div>
+    </div>
+</div>
+</body>
+</html>
