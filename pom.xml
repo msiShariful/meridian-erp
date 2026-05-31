@@ -94,6 +94,12 @@
             <artifactId>spring-modulith-starter-core</artifactId>
         </dependency>
 
+        <!-- AOP (audit logging aspect) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
         <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
