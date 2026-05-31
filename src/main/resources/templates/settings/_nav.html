@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="tabs(active)" class="flex flex-wrap gap-1 border-b border-slate-200">
+    <a th:href="@{/settings/company}" th:classappend="${active=='company'} ? 'border-brand text-brand' : 'border-transparent text-slate-500 hover:text-slate-700'" class="px-4 py-2.5 text-sm font-medium border-b-2">Company</a>
+    <a th:href="@{/settings/users}" th:classappend="${active=='users'} ? 'border-brand text-brand' : 'border-transparent text-slate-500 hover:text-slate-700'" class="px-4 py-2.5 text-sm font-medium border-b-2">Users</a>
+    <a th:href="@{/settings/roles}" th:classappend="${active=='roles'} ? 'border-brand text-brand' : 'border-transparent text-slate-500 hover:text-slate-700'" class="px-4 py-2.5 text-sm font-medium border-b-2">Roles</a>
+    <a th:href="@{/settings/email}" th:classappend="${active=='email'} ? 'border-brand text-brand' : 'border-transparent text-slate-500 hover:text-slate-700'" class="px-4 py-2.5 text-sm font-medium border-b-2">Email</a>
+    <a th:href="@{/settings/audit}" th:classappend="${active=='audit'} ? 'border-brand text-brand' : 'border-transparent text-slate-500 hover:text-slate-700'" class="px-4 py-2.5 text-sm font-medium border-b-2">Audit Log</a>
+    <a th:href="@{/settings/system}" th:classappend="${active=='system'} ? 'border-brand text-brand' : 'border-transparent text-slate-500 hover:text-slate-700'" class="px-4 py-2.5 text-sm font-medium border-b-2">System</a>
+</div>
+</body>
+</html>

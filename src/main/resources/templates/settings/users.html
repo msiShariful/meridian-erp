@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>User Management</title></head>
+<body>
+<div layout:fragment="content">
+    <div th:replace="~{layout/components :: breadcrumb('Settings', '', 'Users')}"></div>
+    <div class="flex items-center justify-between gap-4 mb-4">
+        <h1 class="text-2xl font-bold text-slate-800">Settings</h1>
+        <a th:href="@{/settings/users/new}" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand hover:bg-brand-dark text-white">+ New User</a>
+    </div>
+    <div th:replace="~{settings/_nav :: tabs('users')}"></div>
+
+    <div class="mt-6"><div th:replace="~{layout/components :: listToolbar('/settings/users', ${q})}"></div></div>
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-500 text-left">
+                <tr><th class="px-5 py-3 font-medium">User</th><th class="px-5 py-3 font-medium">Job title</th><th class="px-5 py-3 font-medium">Roles</th><th class="px-5 py-3 font-medium">Status</th><th class="px-5 py-3 font-medium text-right">Actions</th></tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                <tr th:each="u : ${users.content}" class="hover:bg-slate-50">
+                    <td class="px-5 py-3">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full bg-brand/15 text-brand flex items-center justify-center text-xs font-semibold" th:text="${u.initials}">AB</span>
+                            <div><p class="font-medium text-slate-700" th:text="${u.fullName}">Name</p>
+                                <p class="text-xs text-slate-400" th:text="${u.email}">email</p></div>
+                        </div>
+                    </td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${u.jobTitle} ?: '—'">Title</td>
+                    <td class="px-5 py-3">
+                        <span th:each="r : ${u.roles}" class="inline-block px-2 py-0.5 mr-1 mb-1 rounded-full bg-indigo-100 text-brand text-xs" th:text="${r.displayName} ?: ${r.name}">Role</span>
+                    </td>
+                    <td class="px-5 py-3"><span th:replace="~{layout/components :: badge(${u.enabled} ? 'Active' : 'Disabled', ${u.enabled} ? 'success' : 'danger')}"></span></td>
+                    <td class="px-5 py-3 text-right whitespace-nowrap">
+                        <a th:href="@{/settings/users/{id}/edit(id=${u.id})}" class="text-slate-400 hover:text-brand px-1.5">✎</a>
+                        <form th:action="@{/settings/users/{id}/toggle(id=${u.id})}" method="post" class="inline">
+                            <input type="hidden" name="enabled" th:value="${!u.enabled}">
+                            <button class="text-xs text-slate-400 hover:text-amber-600 px-1" th:text="${u.enabled} ? 'Disable' : 'Enable'">Toggle</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div th:replace="~{layout/components :: pagination(${users}, '/settings/users', ${q})}"></div>
+    </div>
+</div>
+</body>
+</html>

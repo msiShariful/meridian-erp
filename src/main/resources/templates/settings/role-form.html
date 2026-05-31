@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Edit Role Permissions</title></head>
+<body>
+<div layout:fragment="content">
+    <div th:replace="~{layout/components :: breadcrumb('Roles', '/settings/roles', ${role.displayName} ?: ${role.name})}"></div>
+    <h1 class="text-2xl font-bold text-slate-800" th:text="${role.displayName} ?: ${role.name}">Role</h1>
+    <p class="text-slate-500 text-sm mb-6" th:text="${role.description}">Description</p>
+
+    <form th:action="@{/settings/roles/{id}/permissions(id=${role.id})}" method="post" class="max-w-3xl">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+            <h2 class="font-semibold text-slate-800 mb-4">Permission Matrix</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                <label th:each="p : ${permissions}" class="flex items-center gap-2 text-sm text-slate-600 border border-slate-200 rounded-lg px-3 py-2 hover:bg-slate-50">
+                    <input type="checkbox" name="permissions" th:value="${p.name}"
+                           th:checked="${role.permissions.contains(p)}"
+                           class="rounded border-slate-300 text-brand">
+                    <span th:text="${p.name}">PERM</span>
+                </label>
+            </div>
+        </div>
+        <div class="flex gap-2 mt-5">
+            <button type="submit" class="bg-brand hover:bg-brand-dark text-white font-semibold px-5 py-2.5 rounded-lg">Save Permissions</button>
+            <a th:href="@{/settings/roles}" class="px-5 py-2.5 rounded-lg bg-white border border-slate-300 text-slate-700 font-medium hover:bg-slate-50">Cancel</a>
+        </div>
+    </form>
+</div>
+</body>
+</html>

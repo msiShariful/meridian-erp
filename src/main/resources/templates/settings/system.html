@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>System Information</title></head>
+<body>
+<div layout:fragment="content">
+    <div th:replace="~{layout/components :: breadcrumb('Settings', '', 'System')}"></div>
+    <h1 class="text-2xl font-bold text-slate-800 mb-4">Settings</h1>
+    <div th:replace="~{settings/_nav :: tabs('system')}"></div>
+
+    <div class="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+            <h2 class="font-semibold text-slate-800 mb-4">Runtime</h2>
+            <dl class="space-y-3 text-sm">
+                <div class="flex justify-between"><dt class="text-slate-400">Spring Boot</dt><dd class="text-slate-700 font-medium" th:text="${springBootVersion}">3.4</dd></div>
+                <div class="flex justify-between"><dt class="text-slate-400">Java</dt><dd class="text-slate-700 font-medium" th:text="${javaVersion}">21</dd></div>
+                <div class="flex justify-between"><dt class="text-slate-400">OS</dt><dd class="text-slate-700 font-medium" th:text="${osName}">macOS</dd></div>
+                <div class="flex justify-between"><dt class="text-slate-400">Processors</dt><dd class="text-slate-700 font-medium" th:text="${processors}">8</dd></div>
+                <div class="flex justify-between"><dt class="text-slate-400">Uptime</dt><dd class="text-slate-700 font-medium" th:text="${uptime}">1h</dd></div>
+            </dl>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+            <h2 class="font-semibold text-slate-800 mb-4">Database & Memory</h2>
+            <dl class="space-y-3 text-sm">
+                <div class="flex justify-between"><dt class="text-slate-400">Database</dt><dd class="text-slate-700 font-medium" th:text="${database}">H2</dd></div>
+                <div class="flex justify-between"><dt class="text-slate-400">Heap used</dt><dd class="text-slate-700 font-medium" th:text="${usedMemoryMb} + ' MB'">0</dd></div>
+                <div class="flex justify-between"><dt class="text-slate-400">Heap max</dt><dd class="text-slate-700 font-medium" th:text="${maxMemoryMb} + ' MB'">0</dd></div>
+            </dl>
+            <form th:action="@{/settings/backup}" method="post" class="mt-6">
+                <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2.5 rounded-lg">Trigger Database Backup</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

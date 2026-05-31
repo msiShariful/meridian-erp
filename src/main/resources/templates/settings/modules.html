@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Module Settings</title></head>
+<body>
+<div layout:fragment="content">
+    <div th:replace="~{layout/components :: breadcrumb('Settings', '', 'Modules')}"></div>
+    <h1 class="text-2xl font-bold text-slate-800 mb-4">Settings</h1>
+    <div th:replace="~{settings/_nav :: tabs('')}"></div>
+    <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+         th:with="mods=${ {'CRM','HRM','Inventory','E-Commerce','Accounting','Procurement','Projects','Support','Reports'} }">
+        <div th:each="m : ${mods}" class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 flex items-center justify-between">
+            <div><p class="font-semibold text-slate-800" th:text="${m}">Module</p><p class="text-xs text-slate-400">Enabled</p></div>
+            <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" checked class="sr-only peer">
+                <div class="w-11 h-6 bg-slate-200 peer-checked:bg-brand rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+            </label>
+        </div>
+    </div>
+</div>
+</body>
+</html>
