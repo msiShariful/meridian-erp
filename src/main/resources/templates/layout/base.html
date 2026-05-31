@@ -14,7 +14,7 @@
             theme: {
                 extend: {
                     colors: {
-                        navy: '#0f172a',
+                        navy: '#0b1222',
                         'navy-light': '#1e293b',
                         brand: '#6366f1',
                         'brand-dark': '#4f46e5',
@@ -22,7 +22,20 @@
                         warning: '#f59e0b',
                         danger: '#ef4444',
                     },
-                    fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui'] }
+                    fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui'] },
+                    boxShadow: {
+                        card: '0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.06)',
+                        'card-hover': '0 10px 25px -5px rgb(15 23 42 / 0.10), 0 8px 10px -6px rgb(15 23 42 / 0.05)',
+                        pop: '0 10px 40px -10px rgb(15 23 42 / 0.25)',
+                    },
+                    keyframes: {
+                        'toast-in': { '0%': { opacity: '0', transform: 'translateX(20px)' }, '100%': { opacity: '1', transform: 'translateX(0)' } },
+                        'modal-in': { '0%': { opacity: '0', transform: 'translateY(8px) scale(.98)' }, '100%': { opacity: '1', transform: 'translateY(0) scale(1)' } },
+                    },
+                    animation: {
+                        'toast-in': 'toast-in .25s ease-out',
+                        'modal-in': 'modal-in .18s ease-out',
+                    }
                 }
             }
         }
@@ -30,120 +43,155 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <link rel="stylesheet" th:href="@{/css/app.css}">
     <th:block layout:fragment="head"></th:block>
 </head>
-<body class="font-sans bg-slate-100 text-slate-800 antialiased"
+<body class="font-sans bg-slate-50 text-slate-800 antialiased selection:bg-brand/20"
       x-data="{ sidebarOpen: false }">
 
 <div class="min-h-screen flex">
 
     <!-- ============ SIDEBAR ============ -->
-    <aside class="fixed inset-y-0 left-0 z-40 w-[260px] bg-navy text-slate-300 flex flex-col transition-transform duration-200 lg:translate-x-0"
+    <aside class="fixed inset-y-0 left-0 z-40 w-[264px] flex flex-col transition-transform duration-200 lg:translate-x-0
+                  bg-gradient-to-b from-navy to-[#111a30] text-slate-300 border-r border-white/5"
            :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
         <!-- Brand -->
-        <div class="h-16 flex items-center gap-3 px-6 border-b border-white/5">
-            <div class="w-9 h-9 rounded-lg bg-brand flex items-center justify-center font-extrabold text-white">M</div>
-            <span class="text-white font-bold text-lg tracking-tight">Meridian</span>
+        <div class="h-16 flex items-center gap-3 px-5 border-b border-white/5">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand to-brand-dark flex items-center justify-center font-extrabold text-white shadow-lg shadow-brand/30">M</div>
+            <div class="leading-tight">
+                <span class="text-white font-bold text-[15px] tracking-tight block">Meridian</span>
+                <span class="text-[10px] text-slate-500 uppercase tracking-widest">ERP Suite</span>
+            </div>
         </div>
 
         <!-- Nav -->
-        <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-6 text-sm">
+        <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-5 text-[13.5px] sidebar-scroll">
             <div th:replace="~{layout/sidebar :: nav}"></div>
         </nav>
 
         <!-- User card -->
-        <div class="border-t border-white/5 p-4" sec:authorize="isAuthenticated()">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-brand/20 text-brand flex items-center justify-center font-semibold"
+        <div class="border-t border-white/5 p-3" sec:authorize="isAuthenticated()">
+            <a th:href="@{/profile}" class="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition-colors">
+                <div class="w-9 h-9 rounded-full bg-gradient-to-br from-brand/30 to-brand/10 text-white flex items-center justify-center text-sm font-semibold ring-1 ring-white/10"
                      th:text="${currentUser != null ? currentUser.initials : 'U'}">U</div>
                 <div class="min-w-0">
                     <p class="text-white text-sm font-medium truncate"
                        th:text="${currentUser != null ? currentUser.fullName : 'User'}">User</p>
-                    <p class="text-xs text-brand truncate"
+                    <p class="text-xs text-slate-400 truncate"
                        th:text="${currentUser != null ? currentUser.primaryRoleDisplay : ''}">Role</p>
                 </div>
-            </div>
+            </a>
         </div>
     </aside>
 
     <!-- Mobile overlay -->
-    <div class="fixed inset-0 bg-black/40 z-30 lg:hidden" x-show="sidebarOpen" x-cloak @click="sidebarOpen=false"></div>
+    <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-30 lg:hidden" x-show="sidebarOpen" x-cloak
+         x-transition.opacity @click="sidebarOpen=false"></div>
 
     <!-- ============ MAIN ============ -->
-    <div class="flex-1 flex flex-col lg:ml-[260px] min-w-0">
+    <div class="flex-1 flex flex-col lg:ml-[264px] min-w-0">
 
         <!-- Topbar -->
-        <header class="sticky top-0 z-20 h-16 bg-white border-b border-slate-200 flex items-center gap-4 px-4 lg:px-6">
-            <button class="lg:hidden text-slate-600" @click="sidebarOpen=true" aria-label="Open menu">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        <header class="sticky top-0 z-20 h-16 bg-white/80 backdrop-blur-md border-b border-slate-200/70 flex items-center gap-4 px-4 lg:px-6">
+            <button class="lg:hidden text-slate-600 hover:text-slate-900" @click="sidebarOpen=true" aria-label="Open menu">
+                <i data-lucide="menu" class="w-6 h-6"></i>
             </button>
 
             <div class="hidden md:flex items-center flex-1 max-w-md">
                 <div class="relative w-full">
-                    <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"/></svg>
-                    <input type="search" placeholder="Search…"
-                           class="w-full pl-9 pr-3 py-2 text-sm rounded-lg bg-slate-100 border border-transparent focus:bg-white focus:border-brand focus:ring-1 focus:ring-brand outline-none">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="search" placeholder="Search anything…"
+                           class="w-full pl-9 pr-3 py-2 text-sm rounded-xl bg-slate-100/80 border border-transparent focus:bg-white focus:border-brand focus:ring-2 focus:ring-brand/20 outline-none transition">
                 </div>
             </div>
 
-            <div class="flex items-center gap-3 ml-auto">
+            <div class="flex items-center gap-1.5 ml-auto">
                 <!-- Notifications -->
-                <a th:href="@{/notifications}" class="relative p-2 rounded-lg hover:bg-slate-100" aria-label="Notifications">
-                    <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2c0 .5-.2 1-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                <a th:href="@{/notifications}" class="relative p-2 rounded-xl hover:bg-slate-100 text-slate-500 hover:text-slate-700 transition-colors" aria-label="Notifications">
+                    <i data-lucide="bell" class="w-5 h-5"></i>
                     <span th:if="${notificationCount != null and notificationCount > 0}"
-                          class="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-danger text-white text-[10px] font-bold flex items-center justify-center"
+                          class="absolute top-0.5 right-0.5 min-w-[17px] h-[17px] px-1 rounded-full bg-danger text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white"
                           th:text="${notificationCount}">3</span>
                 </a>
 
                 <!-- User dropdown -->
                 <div class="relative" x-data="{ open: false }" sec:authorize="isAuthenticated()">
-                    <button @click="open=!open" class="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-100">
-                        <span class="w-8 h-8 rounded-full bg-brand text-white flex items-center justify-center text-sm font-semibold"
+                    <button @click="open=!open" class="flex items-center gap-2 p-1 pr-2 rounded-xl hover:bg-slate-100 transition-colors">
+                        <span class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand to-brand-dark text-white flex items-center justify-center text-sm font-semibold"
                               th:text="${currentUser != null ? currentUser.initials : 'U'}">U</span>
-                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                        <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
                     </button>
                     <div x-show="open" x-cloak @click.outside="open=false"
-                         class="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-lg border border-slate-200 py-2 text-sm">
-                        <div class="px-4 py-2 border-b border-slate-100">
-                            <p class="font-medium text-slate-800" th:text="${currentUser != null ? currentUser.fullName : ''}">User</p>
-                            <p class="text-xs text-slate-500" th:text="${currentUser != null ? currentUser.username : ''}">email</p>
+                         x-transition.origin.top.right
+                         class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-pop border border-slate-200/70 py-1.5 text-sm">
+                        <div class="px-4 py-2.5 border-b border-slate-100">
+                            <p class="font-semibold text-slate-800" th:text="${currentUser != null ? currentUser.fullName : ''}">User</p>
+                            <p class="text-xs text-slate-500 truncate" th:text="${currentUser != null ? currentUser.username : ''}">email</p>
                         </div>
-                        <a th:href="@{/profile}" class="block px-4 py-2 hover:bg-slate-50">My Profile</a>
-                        <a th:href="@{/settings/company}" class="block px-4 py-2 hover:bg-slate-50" sec:authorize="hasAnyRole('SUPER_ADMIN','ADMIN')">Settings</a>
+                        <a th:href="@{/profile}" class="flex items-center gap-2.5 px-4 py-2 hover:bg-slate-50 text-slate-600"><i data-lucide="user" class="w-4 h-4"></i> My Profile</a>
+                        <a th:href="@{/settings/company}" class="flex items-center gap-2.5 px-4 py-2 hover:bg-slate-50 text-slate-600" sec:authorize="hasAnyRole('SUPER_ADMIN','ADMIN')"><i data-lucide="settings" class="w-4 h-4"></i> Settings</a>
                         <form th:action="@{/logout}" method="post" class="border-t border-slate-100 mt-1 pt-1">
-                            <button type="submit" class="w-full text-left px-4 py-2 text-danger hover:bg-red-50">Sign out</button>
+                            <button type="submit" class="w-full flex items-center gap-2.5 px-4 py-2 text-danger hover:bg-red-50"><i data-lucide="log-out" class="w-4 h-4"></i> Sign out</button>
                         </form>
                     </div>
                 </div>
             </div>
         </header>
 
-        <!-- Flash messages -->
-        <div class="px-4 lg:px-6 pt-4" th:if="${successMessage != null or errorMessage != null}">
-            <div th:if="${successMessage}" x-data="{show:true}" x-show="show"
-                 class="flex items-center gap-3 bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-lg">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                <span th:text="${successMessage}"></span>
-                <button @click="show=false" class="ml-auto text-emerald-600">&times;</button>
-            </div>
-            <div th:if="${errorMessage}" x-data="{show:true}" x-show="show"
-                 class="flex items-center gap-3 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <span th:text="${errorMessage}"></span>
-                <button @click="show=false" class="ml-auto text-red-600">&times;</button>
-            </div>
-        </div>
-
         <!-- Page content -->
         <main class="flex-1 p-4 lg:p-6" layout:fragment="content">
             <p>Page content goes here.</p>
         </main>
 
-        <footer class="px-6 py-4 text-center text-xs text-slate-400 border-t border-slate-200">
+        <footer class="px-6 py-4 text-center text-xs text-slate-400 border-t border-slate-200/70">
             <span th:text="${appName}">Meridian ERP</span> &copy; 2026 · Built with Spring Boot &amp; Thymeleaf
         </footer>
+    </div>
+</div>
+
+<!-- ============ TOAST NOTIFICATIONS (flash messages) ============ -->
+<div class="fixed top-5 right-5 z-[60] flex flex-col gap-3 w-full max-w-sm pointer-events-none">
+    <div th:if="${successMessage}" data-toast
+         class="toast pointer-events-auto flex items-start gap-3 bg-white border border-emerald-200 shadow-pop rounded-xl px-4 py-3.5 animate-toast-in">
+        <span class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0"><i data-lucide="check" class="w-4 h-4"></i></span>
+        <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold text-slate-800">Success</p>
+            <p class="text-sm text-slate-500" th:text="${successMessage}">Message</p>
+        </div>
+        <button onclick="this.closest('[data-toast]').remove()" class="text-slate-300 hover:text-slate-500"><i data-lucide="x" class="w-4 h-4"></i></button>
+    </div>
+    <div th:if="${errorMessage}" data-toast
+         class="toast pointer-events-auto flex items-start gap-3 bg-white border border-red-200 shadow-pop rounded-xl px-4 py-3.5 animate-toast-in">
+        <span class="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center shrink-0"><i data-lucide="alert-triangle" class="w-4 h-4"></i></span>
+        <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold text-slate-800">Something went wrong</p>
+            <p class="text-sm text-slate-500" th:text="${errorMessage}">Message</p>
+        </div>
+        <button onclick="this.closest('[data-toast]').remove()" class="text-slate-300 hover:text-slate-500"><i data-lucide="x" class="w-4 h-4"></i></button>
+    </div>
+</div>
+
+<!-- ============ CONFIRMATION MODAL ============ -->
+<div id="confirm-modal" class="fixed inset-0 z-[70] hidden items-center justify-center p-4">
+    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" data-confirm-cancel></div>
+    <div class="relative bg-white rounded-2xl shadow-pop w-full max-w-md p-6 animate-modal-in">
+        <div class="flex gap-4">
+            <span id="confirm-icon" class="w-11 h-11 rounded-full bg-red-100 text-danger flex items-center justify-center shrink-0">
+                <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+            </span>
+            <div class="flex-1">
+                <h3 id="confirm-title" class="text-lg font-bold text-slate-800">Are you sure?</h3>
+                <p id="confirm-message" class="text-sm text-slate-500 mt-1">This action cannot be undone.</p>
+            </div>
+        </div>
+        <div class="flex justify-end gap-3 mt-6">
+            <button type="button" data-confirm-cancel
+                    class="px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 text-sm font-medium hover:bg-slate-50 transition">Cancel</button>
+            <button type="button" id="confirm-ok"
+                    class="px-4 py-2.5 rounded-xl bg-danger text-white text-sm font-semibold hover:brightness-95 transition shadow-sm">Confirm</button>
+        </div>
     </div>
 </div>
 
