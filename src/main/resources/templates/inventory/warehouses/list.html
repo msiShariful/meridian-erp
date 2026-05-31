@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Warehouses</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('Inventory', '', 'Warehouses')}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Warehouses</h1>
+            <p class="text-slate-500 text-sm mt-1">Storage locations across the country.</p>
+        </div>
+        <a sec:authorize="hasAuthority('INVENTORY_EDIT')" th:href="@{/inventory/warehouses/new}" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand hover:bg-brand-dark text-white">+ New Warehouse</a>
+    </div>
+
+    <div th:replace="~{layout/components :: listToolbar('/inventory/warehouses', ${q})}"></div>
+
+    <div th:if="${warehouses.isEmpty()}" class="bg-white rounded-xl border border-slate-200 shadow-sm">
+        <div th:replace="~{layout/components :: emptyState('No warehouses yet', 'Add a storage location to manage stock.', '/inventory/warehouses/new', '+ New Warehouse')}"></div>
+    </div>
+
+    <div th:unless="${warehouses.isEmpty()}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div th:each="w : ${warehouses.content}" class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 hover:shadow-md transition-shadow">
+            <div class="flex items-start justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                    <span class="w-11 h-11 rounded-lg bg-brand/15 text-brand flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 21V8l9-5 9 5v13M3 21h18M9 21v-6h6v6"/></svg>
+                    </span>
+                    <div class="min-w-0">
+                        <p class="font-semibold text-slate-800 truncate" th:text="${w.name}">Name</p>
+                        <p class="text-xs text-slate-400 truncate" th:text="${w.location} ?: 'No location'">Location</p>
+                    </div>
+                </div>
+                <div class="flex gap-1 shrink-0" sec:authorize="hasAuthority('INVENTORY_EDIT')">
+                    <a th:href="@{/inventory/warehouses/{id}/edit(id=${w.id})}" class="text-slate-400 hover:text-brand px-1.5">✎</a>
+                    <form th:action="@{/inventory/warehouses/{id}/delete(id=${w.id})}" method="post" class="inline" data-confirm="Delete this warehouse?">
+                        <button class="text-slate-400 hover:text-danger px-1.5">🗑</button>
+                    </form>
+                </div>
+            </div>
+            <dl class="mt-4 grid grid-cols-2 gap-y-2 text-sm">
+                <div><dt class="text-slate-400">Manager</dt><dd class="text-slate-700" th:text="${w.manager} ?: '—'"></dd></div>
+                <div><dt class="text-slate-400">Capacity</dt><dd class="text-slate-700" th:text="${#numbers.formatInteger(w.capacity, 1, 'COMMA')}">0</dd></div>
+            </dl>
+        </div>
+    </div>
+</div>
+</body>
+</html>

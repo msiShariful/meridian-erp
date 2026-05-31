@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title th:text="${product.name}">Product</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('Products', '/inventory/products', ${product.name})}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div class="flex items-center gap-4">
+            <span class="w-14 h-14 rounded-lg bg-brand/15 text-brand flex items-center justify-center text-lg font-bold overflow-hidden">
+                <img th:if="${product.image}" th:src="@{${product.image}}" class="w-full h-full object-cover" alt="">
+                <span th:unless="${product.image}" th:text="${product.initials}">AB</span>
+            </span>
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800" th:text="${product.name}">Name</h1>
+                <p class="text-slate-500 text-sm font-mono" th:text="${product.sku}">SKU</p>
+            </div>
+            <span th:replace="~{layout/components :: badge(${product.stockStatus}, ${product.stockStatusColor})}"></span>
+        </div>
+        <div class="flex gap-2" sec:authorize="hasAuthority('INVENTORY_EDIT')">
+            <a th:href="@{/inventory/products/{id}/edit(id=${product.id})}" class="px-4 py-2 text-sm font-medium rounded-lg bg-white border border-slate-300 hover:bg-slate-50">Edit</a>
+            <a th:href="@{/inventory/stock}" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand hover:bg-brand-dark text-white">Adjust Stock</a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                <h2 class="font-semibold text-slate-800 mb-4">Product Details</h2>
+                <dl class="grid grid-cols-2 gap-y-4 text-sm">
+                    <div><dt class="text-slate-400">Category</dt><dd class="text-slate-700" th:text="${product.category != null ? product.category.name : '—'}"></dd></div>
+                    <div><dt class="text-slate-400">Unit</dt><dd class="text-slate-700" th:text="${product.unit} ?: '—'"></dd></div>
+                    <div><dt class="text-slate-400">Cost price</dt><dd class="text-slate-700">৳ <span th:text="${#numbers.formatInteger(product.costPrice, 1, 'COMMA')}">0</span></dd></div>
+                    <div><dt class="text-slate-400">Selling price</dt><dd class="text-slate-700">৳ <span th:text="${#numbers.formatInteger(product.sellingPrice, 1, 'COMMA')}">0</span></dd></div>
+                    <div><dt class="text-slate-400">Barcode</dt><dd class="text-slate-700" th:text="${product.barcode} ?: '—'"></dd></div>
+                    <div><dt class="text-slate-400">Added</dt><dd class="text-slate-700" th:text="${product.createdAt != null ? #temporals.format(product.createdAt, 'dd MMM yyyy') : '—'}"></dd></div>
+                </dl>
+                <div th:if="${product.description}" class="mt-4 pt-4 border-t border-slate-100">
+                    <dt class="text-slate-400 text-sm mb-1">Description</dt>
+                    <p class="text-sm text-slate-600 whitespace-pre-line" th:text="${product.description}"></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-6">
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                <h2 class="font-semibold text-slate-800 mb-4">Stock</h2>
+                <div class="text-center py-4">
+                    <p class="text-4xl font-bold text-slate-800" th:text="${product.stockQuantity}">0</p>
+                    <p class="text-sm text-slate-400 mt-1" th:text="'units on hand · ' + (${product.unit} ?: 'unit')">units</p>
+                    <div class="mt-3">
+                        <span th:replace="~{layout/components :: badge(${product.stockStatus}, ${product.stockStatusColor})}"></span>
+                    </div>
+                </div>
+                <dl class="grid grid-cols-2 gap-y-3 text-sm mt-4 pt-4 border-t border-slate-100">
+                    <div><dt class="text-slate-400">Reorder level</dt><dd class="text-slate-700" th:text="${product.reorderLevel}">0</dd></div>
+                    <div><dt class="text-slate-400">Status</dt><dd class="text-slate-700" th:text="${product.stockStatus}">In Stock</dd></div>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

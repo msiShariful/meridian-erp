@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title>Categories</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('Inventory', '', 'Categories')}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Categories</h1>
+            <p class="text-slate-500 text-sm mt-1">Organise your product catalogue.</p>
+        </div>
+        <a sec:authorize="hasAuthority('INVENTORY_EDIT')" th:href="@{/inventory/categories/new}" class="px-4 py-2 text-sm font-medium rounded-lg bg-brand hover:bg-brand-dark text-white">+ New Category</a>
+    </div>
+
+    <div th:replace="~{layout/components :: listToolbar('/inventory/categories', ${q})}"></div>
+
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div th:if="${categories.isEmpty()}" th:replace="~{layout/components :: emptyState('No categories yet', 'Create a category to group your products.', '/inventory/categories/new', '+ New Category')}"></div>
+
+        <table th:unless="${categories.isEmpty()}" class="w-full text-sm">
+            <thead class="bg-slate-50 text-slate-500 text-left">
+                <tr>
+                    <th class="px-5 py-3 font-medium">Name</th>
+                    <th class="px-5 py-3 font-medium">Parent</th>
+                    <th class="px-5 py-3 font-medium">Products</th>
+                    <th class="px-5 py-3 font-medium">Description</th>
+                    <th class="px-5 py-3 font-medium text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                <tr th:each="c : ${categories.content}" class="hover:bg-slate-50">
+                    <td class="px-5 py-3 font-medium text-slate-700" th:text="${c.name}">Name</td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${c.parent != null ? c.parent.name : '—'}">Parent</td>
+                    <td class="px-5 py-3 text-slate-600" th:text="${counts.get(c.id)}">0</td>
+                    <td class="px-5 py-3 text-slate-500" th:text="${c.description} ?: '—'">Description</td>
+                    <td class="px-5 py-3 text-right whitespace-nowrap">
+                        <a sec:authorize="hasAuthority('INVENTORY_EDIT')" th:href="@{/inventory/categories/{id}/edit(id=${c.id})}" class="text-slate-400 hover:text-brand px-1.5" title="Edit">✎</a>
+                        <form sec:authorize="hasAuthority('INVENTORY_EDIT')" th:action="@{/inventory/categories/{id}/delete(id=${c.id})}" method="post" class="inline" data-confirm="Delete this category?">
+                            <button class="text-slate-400 hover:text-danger px-1.5" title="Delete">🗑</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div th:replace="~{layout/components :: pagination(${categories}, '/inventory/categories', ${q})}"></div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head><title th:text="${supplier.name}">Supplier</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div th:replace="~{layout/components :: breadcrumb('Suppliers', '/inventory/suppliers', ${supplier.name})}"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div class="flex items-center gap-4">
+            <span class="w-14 h-14 rounded-full bg-brand/15 text-brand flex items-center justify-center text-lg font-bold" th:text="${supplier.initials}">AB</span>
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800" th:text="${supplier.name}">Name</h1>
+                <p class="text-slate-500 text-sm" th:text="${supplier.contactPerson} ?: 'No contact person'">Contact</p>
+            </div>
+            <span class="whitespace-nowrap">
+                <span th:each="i : ${#numbers.sequence(1,5)}"
+                      th:classappend="${i <= supplier.rating} ? 'text-amber-400' : 'text-slate-200'">★</span>
+            </span>
+        </div>
+        <div class="flex gap-2" sec:authorize="hasAuthority('INVENTORY_EDIT')">
+            <a th:href="@{/inventory/suppliers/{id}/edit(id=${supplier.id})}" class="px-4 py-2 text-sm font-medium rounded-lg bg-white border border-slate-300 hover:bg-slate-50">Edit</a>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 max-w-3xl">
+        <h2 class="font-semibold text-slate-800 mb-4">Supplier Details</h2>
+        <dl class="grid grid-cols-2 gap-y-4 text-sm">
+            <div><dt class="text-slate-400">Email</dt><dd class="text-slate-700" th:text="${supplier.email} ?: '—'"></dd></div>
+            <div><dt class="text-slate-400">Phone</dt><dd class="text-slate-700" th:text="${supplier.phone} ?: '—'"></dd></div>
+            <div><dt class="text-slate-400">Payment terms</dt><dd class="text-slate-700" th:text="${supplier.paymentTerms} ?: '—'"></dd></div>
+            <div><dt class="text-slate-400">Rating</dt><dd><span th:each="i : ${#numbers.sequence(1,5)}" th:classappend="${i <= supplier.rating} ? 'text-amber-400' : 'text-slate-200'">★</span></dd></div>
+            <div class="col-span-2"><dt class="text-slate-400">Address</dt><dd class="text-slate-700" th:text="${supplier.address} ?: '—'"></dd></div>
+        </dl>
+    </div>
+</div>
+</body>
+</html>
